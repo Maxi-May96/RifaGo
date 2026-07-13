@@ -1,0 +1,148 @@
+<div class="space-y-8">
+  <!-- Welcome banner -->
+  <div class="bg-gradient-to-r from-primary to-primary-light rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight">Panel de Administración</h1>
+      <p class="text-primary-light mt-2 text-sm md:text-base opacity-90">Hola, <span class="font-bold"><%= user.name %></span>. Aquí tienes el estado actual y rendimiento de RifaGo.</p>
+    </div>
+    <div class="flex gap-3">
+      <a href="/raffles/create" class="bg-secondary text-dark hover:bg-yellow-300 font-bold px-6 py-3 rounded-xl shadow-lg transition-colors text-sm">
+        + Crear Nuevo Sorteo
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Stat 1: Earnings -->
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ingresos Totales</span>
+        <h3 class="text-3xl font-black text-dark">$<%= stats.totalEarnings.toLocaleString('es-AR') %> ARS</h3>
+      </div>
+      <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl font-bold shadow-md">
+        💵
+      </div>
+    </div>
+
+    <!-- Stat 2: Active Users -->
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Clientes Activos</span>
+        <h3 class="text-3xl font-black text-dark"><%= stats.totalUsers %></h3>
+      </div>
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center text-2xl font-bold shadow-md">
+        👥
+      </div>
+    </div>
+
+    <!-- Stat 3: Total Sorteos -->
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Sorteos Creados</span>
+        <h3 class="text-3xl font-black text-dark"><%= stats.totalRaffles %></h3>
+      </div>
+      <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold shadow-md">
+        🎟️
+      </div>
+    </div>
+  </div>
+
+  <!-- Data grids -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Recent Raffles -->
+    <div class="lg:col-span-8 bg-white rounded-3xl border border-borderCustom shadow-sm p-6 overflow-hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-dark">Sorteos Recientes</h3>
+        <a href="/admin/raffles" class="text-xs font-bold text-primary hover:text-primary-light transition-colors">Ver todos</a>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-borderCustom text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <th class="pb-3 font-semibold">Sorteo</th>
+              <th class="pb-3 font-semibold">Categoría</th>
+              <th class="pb-3 font-semibold">Precio Boleto</th>
+              <th class="pb-3 font-semibold">Boletos Vendidos</th>
+              <th class="pb-3 font-semibold">Estado</th>
+              <th class="pb-3 font-semibold text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-sm">
+            <% if (recentRaffles.length > 0) { %>
+              <% recentRaffles.forEach(raffle => { %>
+                <tr>
+                  <td class="py-4 font-bold text-dark max-w-[180px] truncate"><%= raffle.title %></td>
+                  <td class="py-4 text-slate-500 capitalize"><%= raffle.category ? raffle.category.name : 'N/A' %></td>
+                  <td class="py-4 font-semibold text-dark">$<%= raffle.ticketPrice.toLocaleString('es-AR') %></td>
+                  <td class="py-4">
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-dark"><%= raffle.soldTickets %></span>
+                      <span class="text-slate-400">/ <%= raffle.totalTickets %></span>
+                    </div>
+                  </td>
+                  <td class="py-4">
+                    <% if (raffle.status === 'active') { %>
+                      <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Activo</span>
+                    <% } else if (raffle.status === 'drawn') { %>
+                      <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Sorteado</span>
+                    <% } else { %>
+                      <span class="bg-red-50 text-red-700 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Cancelado</span>
+                    <% } %>
+                  </td>
+                  <td class="py-4 text-right">
+                    <a href="/raffles/edit/<%= raffle._id %>" class="text-xs font-bold text-primary hover:underline">Editar</a>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-500">
+                  <div class="text-2xl mb-2">🎟️</div>
+                  No hay sorteos creados actualmente. <a href="/raffles/create" class="text-primary font-bold hover:underline">Crea uno ahora</a>.
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="lg:col-span-4 bg-white rounded-3xl border border-borderCustom shadow-sm p-6 overflow-hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-bold text-dark">Clientes Recientes</h3>
+        <a href="/admin/users" class="text-xs font-bold text-primary hover:text-primary-light transition-colors">Ver todos</a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-borderCustom text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <th class="pb-3 font-semibold">Nombre</th>
+              <th class="pb-3 font-semibold">Email</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-sm">
+            <% if (recentUsers.length > 0) { %>
+              <% recentUsers.forEach(u => { %>
+                <tr>
+                  <td class="py-4 font-bold text-dark"><%= u.name %></td>
+                  <td class="py-4 text-slate-500 truncate max-w-[140px]"><%= u.email %></td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="2" class="py-8 text-center text-slate-500">
+                  <div class="text-2xl mb-2">👥</div>
+                  No hay clientes registrados aún.
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

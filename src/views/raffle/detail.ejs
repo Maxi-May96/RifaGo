@@ -1,0 +1,811 @@
+<!-- src/views/raffle/detail.ejs -->
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>
+<%
+// Helper to pad ticket numbers based on total count
+function padNumber(num, total) {
+  const padLen = String(total - 1).length;
+  return String(num).padStart(padLen, '0');
+}
+%>
+
+<div class="space-y-8 max-w-7xl mx-auto">
+  <!-- Top Banner / Hero -->
+  <div class="relative bg-dark text-white rounded-3xl overflow-hidden shadow-xl border border-slate-800">
+    <!-- Background overlay/gradient -->
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent z-10"></div>
+    <% if (raffle.image) { %>
+      <img src="<%= raffle.image %>" alt="<%= raffle.title %>" class="absolute inset-0 w-full h-full object-cover blur-[2px] opacity-40">
+    <% } %>
+    
+    <div class="relative z-20 p-8 md:p-12 flex flex-col md:flex-row md:items-end justify-between gap-6 min-h-[300px]">
+      <div class="space-y-4 max-w-3xl">
+        <!-- Status Badge -->
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider
+          <%= raffle.status === 'activo' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 
+              raffle.status === 'borrador' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 
+              'bg-slate-500/20 text-slate-400 border border-slate-500/30' %>">
+          Sorteo <%= raffle.status %>
+        </span>
+        
+        <h1 class="text-3xl md:text-5xl font-black tracking-tight"><%= raffle.title %></h1>
+        <p class="text-slate-300 font-medium text-sm md:text-base leading-relaxed"><%= raffle.motivo %></p>
+      </div>
+
+      <!-- Price Tag -->
+      <div class="bg-primary/20 backdrop-blur-md border border-primary/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[150px] shadow-lg">
+        <span class="text-slate-300 text-xs font-bold uppercase tracking-wider">Valor del Número</span>
+        <span class="text-3xl font-black text-white mt-1">$<%= raffle.ticketPrice.toLocaleString('es-AR') %></span>
+        <span class="text-[10px] font-bold text-slate-400 mt-0.5">ARS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column (Details, Prizes, Selector) -->
+    <div class="lg:col-span-2 space-y-8">
+      
+      <!-- Description / About -->
+      <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-4">
+        <h3 class="text-lg font-black text-dark flex items-center space-x-2">
+          <span>📝</span> <span>Descripción del Sorteo</span>
+        </h3>
+        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line"><%= raffle.description %></p>
+      </div>
+
+      <!-- TICKET SELECTOR INTERFACE OR CELEBRATION WINNER CARD -->
+      <% if (raffle.status === 'finalizado' && raffle.winner) { %>
+        <!-- CELEBRATION WINNER CARD -->
+        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+          <!-- Glow Background Elements -->
+          <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+          <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-emerald-700/30 rounded-full blur-2xl"></div>
+
+          <div class="space-y-4 text-center md:text-left relative z-10 max-w-lg">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/35">
+              <span>🎉</span> <span>Sorteo Completado</span>
+            </span>
+            <h2 class="text-3xl font-black tracking-tight">¡Felicitaciones al Ganador!</h2>
+            <p class="text-emerald-50 text-xs leading-relaxed font-semibold">
+              El sorteo se ha realizado con éxito. Agradecemos a toda la comunidad por participar.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 pt-2">
+              <div class="bg-white/10 border border-white/20 px-4 py-2.5 rounded-xl">
+                <span class="block text-[8px] text-emerald-100 font-bold uppercase tracking-wider">Nombre del Ganador</span>
+                <span class="font-extrabold text-white text-sm"><%= raffle.winner.name %></span>
+              </div>
+              <% if (raffle.winner.email) { %>
+                <div class="bg-white/10 border border-white/20 px-4 py-2.5 rounded-xl">
+                  <span class="block text-[8px] text-emerald-100 font-bold uppercase tracking-wider">Contacto</span>
+                  <span class="font-extrabold text-white text-xs"><%= raffle.winner.email %></span>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Big Winning Number Stub -->
+          <div class="bg-white text-emerald-800 rounded-3xl p-6 border-4 border-dashed border-emerald-200/50 shadow-lg text-center min-w-[200px] flex-shrink-0 relative z-10 transform hover:scale-105 transition-transform duration-300">
+            <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-teal-600 rounded-full"></div>
+            <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-teal-600 rounded-full"></div>
+            
+            <span class="text-[9px] text-emerald-600 font-black uppercase tracking-wider block mb-1">Nro Ganador</span>
+            <span class="text-4xl font-black tracking-wider block"><%= padNumber(raffle.winningNumber, raffle.totalTickets) %></span>
+            <span class="text-[9px] font-bold text-slate-400 block mt-2">Sorteo Verificado RifaGo</span>
+          </div>
+        </div>
+      <% } else { %>
+        <!-- TICKET SELECTOR INTERFACE -->
+        <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-6">
+          <!-- Section Header & Progress Bar -->
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-100 pb-5">
+            <div class="space-y-1">
+              <h3 class="text-lg font-black text-dark flex items-center space-x-2">
+                <span>🎟️</span> <span>Adquirir Números</span>
+              </h3>
+              <p class="text-xs text-slate-400">Selecciona tus números de la suerte para participar.</p>
+            </div>
+            
+            <!-- Sales Progress Bar -->
+            <% const soldPercent = Math.round((soldNumbers.length / raffle.totalTickets) * 100); %>
+            <div class="space-y-1.5 w-full sm:w-64">
+              <div class="flex justify-between text-xs font-bold">
+                <span class="text-slate-500">Progreso de Venta</span>
+                <span class="text-dark font-extrabold"><%= soldNumbers.length %> / <%= raffle.totalTickets %> (<%= soldPercent %>%)</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+                <div class="h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 rounded-full" style="width: <%= soldPercent %>%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <% if (raffle.ticketSelectionMode === 'manual') { %>
+            <!-- MANUAL MODE: Interactive Grid & Action Panel -->
+            <div class="space-y-4">
+              <!-- Grouped Controls Panel -->
+              <div class="bg-slate-50/70 p-4 rounded-2xl border border-slate-100/80 space-y-4">
+                <!-- Row 1: Search & Filter Pills -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div class="relative w-full md:w-64">
+                    <span class="absolute left-3.5 top-3 text-slate-400 text-xs">🔍</span>
+                    <input type="text" id="ticketSearch" onkeyup="filterTickets()" placeholder="Buscar número..." 
+                           class="pl-9 pr-4 py-2.5 text-xs rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all w-full bg-white font-bold text-dark">
+                  </div>
+                  
+                  <div class="flex items-center space-x-1 bg-slate-200/60 p-1 rounded-xl self-start md:self-auto">
+                    <button type="button" onclick="setGridFilter('all')" id="filter-all" class="px-3.5 py-1.5 text-xs font-black rounded-lg bg-white text-dark shadow-sm transition-all">Todos</button>
+                    <button type="button" onclick="setGridFilter('avail')" id="filter-avail" class="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-all">Disponibles</button>
+                    <button type="button" onclick="setGridFilter('sold')" id="filter-sold" class="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-all">Vendidos</button>
+                  </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-slate-200/60"></div>
+
+                <!-- Row 2: Quick Pickers -->
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Selección Rápida al Azar:</span>
+                  <div class="flex items-center flex-wrap gap-2">
+                    <button type="button" onclick="selectRandomTickets(1)" class="px-3 py-1.5 text-xs font-extrabold rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-100 transition-all bg-white text-slate-700 flex items-center space-x-1.5 shadow-sm">
+                      <span>🎲</span> <span>1 Nro</span>
+                    </button>
+                    <button type="button" onclick="selectRandomTickets(5)" class="px-3 py-1.5 text-xs font-extrabold rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-100 transition-all bg-white text-slate-700 flex items-center space-x-1.5 shadow-sm">
+                      <span>🎲</span> <span>5 Nros</span>
+                    </button>
+                    <button type="button" onclick="selectRandomTickets(10)" class="px-3 py-1.5 text-xs font-extrabold rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-100 transition-all bg-white text-slate-700 flex items-center space-x-1.5 shadow-sm">
+                      <span>🎲</span> <span>10 Nros</span>
+                    </button>
+                    <button type="button" onclick="clearSelection()" class="px-3 py-1.5 text-xs font-extrabold rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-all bg-white flex items-center space-x-1.5 shadow-sm">
+                      <span>🗑️</span> <span>Limpiar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Scrollable Grid Container -->
+              <div class="border border-slate-100 rounded-2xl p-4 bg-white max-h-[300px] overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2" id="ticketsGrid">
+                  <% for (let i = 0; i < raffle.totalTickets; i++) { 
+                       const numInfo = activeNumbers[i];
+                       const isSold = numInfo && numInfo.status === 'sold';
+                       const isPending = numInfo && numInfo.status === 'pending_payment';
+                       const isReserved = numInfo && numInfo.status === 'reserved';
+                       const isOwnReservation = isReserved && locals.user && String(numInfo.user) === String(locals.user._id);
+                       const numStr = padNumber(i, raffle.totalTickets);
+                  %>
+                    <button type="button" 
+                            data-number="<%= i %>" 
+                            data-str="<%= numStr %>"
+                            data-sold="<%= isSold %>"
+                            data-pending="<%= isPending %>"
+                            data-reserved="<%= isReserved && !isOwnReservation %>"
+                            onclick="toggleTicketSelect(<%= i %>)"
+                            class="ticket-btn h-10 rounded-lg text-xs font-extrabold flex items-center justify-center transition-all border relative overflow-hidden
+                              <%= isSold ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed select-none' : 
+                                  isPending ? 'bg-blue-50 text-blue-400 border-blue-100 cursor-not-allowed select-none' : 
+                                  (isReserved && !isOwnReservation) ? 'bg-amber-50/70 text-amber-500 border-amber-100 cursor-not-allowed select-none' : 
+                                  isOwnReservation ? 'bg-primary text-white border-primary shadow-sm hover:scale-105 active:scale-95' :
+                                  'bg-white hover:bg-primary/5 hover:border-primary/30 border-slate-200 text-slate-700 shadow-sm hover:scale-105 active:scale-95' %>"
+                            <%= (isSold || isPending || (isReserved && !isOwnReservation)) ? 'disabled' : '' %>>
+                      <% if (isSold) { %>
+                        <span class="absolute text-[5px] text-slate-300 top-0.5 right-0.5">🔒</span>
+                        <span class="line-through opacity-40"><%= numStr %></span>
+                      <% } else if (isPending) { %>
+                        <span class="absolute text-[5px] text-blue-400 top-0.5 right-0.5">⏳</span>
+                        <span><%= numStr %></span>
+                      <% } else if (isReserved && !isOwnReservation) { %>
+                        <span class="absolute text-[5px] text-amber-500 top-0.5 right-0.5">⏳</span>
+                        <span><%= numStr %></span>
+                      <% } else { %>
+                        <!-- Perforation decoration -->
+                        <span class="absolute left-[25%] top-0 bottom-0 border-r border-dotted border-slate-200"></span>
+                        <span class="text-[5px] text-slate-400 absolute left-0.5 uppercase font-black tracking-tight" style="writing-mode: vertical-lr;">Rifa</span>
+                        <span class="ml-2.5"><%= numStr %></span>
+                      <% } %>
+                    </button>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% } else { %>
+            <!-- AUTOMATIC MODE: Ticket Quantity Counter -->
+            <div class="flex flex-col items-center justify-center py-8 space-y-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cantidad de Números a Comprar</span>
+              <div class="flex items-center space-x-4">
+                <button type="button" onclick="adjustAutoQuantity(-1)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-extrabold text-xl shadow-sm transition-all focus:outline-none">
+                  -
+                </button>
+                <input type="number" id="autoQuantity" value="1" min="1" max="<%= Math.min(raffle.maxPerBuyer, raffle.totalTickets - soldNumbers.length) %>" readonly
+                       class="w-20 text-center font-black text-xl py-2 rounded-xl border border-borderCustom focus:outline-none bg-white">
+                <button type="button" onclick="adjustAutoQuantity(1)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-extrabold text-xl shadow-sm transition-all focus:outline-none">
+                  +
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400 font-semibold">Límite por comprador: <%= raffle.maxPerBuyer %> números</p>
+            </div>
+          <% } %>
+
+          <!-- Selected numbers detail list (scrollable list of ticket + cost) -->
+          <div id="selectedDetailSection" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-100/80 space-y-2">
+            <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Boletos Seleccionados y Costo:</span>
+            <div id="selectedDetailScroll" class="flex flex-nowrap gap-2.5 overflow-x-auto pb-2 select-none custom-scrollbar">
+              <!-- Dynamic entries will be inserted here -->
+            </div>
+          </div>
+
+          <!-- Checkout Card / Action Summary -->
+          <div class="bg-slate-900 text-white rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-5 shadow-xl border border-slate-800">
+            <div class="text-center md:text-left space-y-1.5 max-w-md min-w-0 w-full">
+              <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Resumen de Selección</span>
+              <span id="checkoutSummary" class="text-sm font-black text-white block">
+                <%= raffle.ticketSelectionMode === 'manual' ? 'Ningún número seleccionado' : '1 número asignado al azar' %>
+              </span>
+              <div id="selectedTagsList" class="flex flex-nowrap gap-1.5 overflow-x-auto pb-1 select-none" style="scrollbar-width: thin; -ms-overflow-style: none;"></div>
+            </div>
+
+            <div class="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t border-slate-800 md:border-t-0 pt-4 md:pt-0">
+              <div class="text-left md:text-right">
+                <span class="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Total a Pagar</span>
+                <span id="checkoutTotal" class="text-2xl font-black text-primary-light">
+                  $<%= raffle.ticketPrice.toLocaleString('es-AR') %> ARS
+                </span>
+              </div>
+              <form action="/purchases/checkout" method="POST" id="purchaseForm" class="flex-shrink-0">
+                <input type="hidden" name="raffleId" value="<%= raffle._id %>">
+                <input type="hidden" name="selectedNumbers" id="formNumbers" value="">
+                <input type="hidden" name="quantity" id="formQuantity" value="1">
+                
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-primary to-primary-light hover:shadow-primary/30 text-white font-bold rounded-xl transition-all shadow-md text-sm hover:-translate-y-0.5 transform duration-200">
+                  🚀 Comprar Boletos
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Prizes Listing -->
+      <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-6">
+        <h3 class="text-lg font-black text-dark flex items-center space-x-2">
+          <span>🏆</span> <span>Premios a Sortear</span>
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <% if (raffle.premios && raffle.premios.length > 0) { %>
+            <% raffle.premios.forEach(premio => { %>
+              <div class="flex gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                <% if (premio.imagen) { %>
+                  <img src="<%= premio.imagen %>" alt="<%= premio.nombre %>" class="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-sm flex-shrink-0">
+                <% } else { %>
+                  <div class="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0">
+                    🎁
+                  </div>
+                <% } %>
+                <div class="space-y-1 min-w-0">
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-primary/10 text-primary uppercase">
+                      <%= premio.posicion %>
+                    </span>
+                    <% if (premio.valor) { %>
+                      <span class="text-xs font-bold text-slate-400">Valorado en: $<%= premio.valor.toLocaleString('es-AR') %></span>
+                    <% } %>
+                  </div>
+                  <h4 class="font-extrabold text-dark text-sm truncate"><%= premio.nombre %></h4>
+                  <p class="text-xs text-slate-500 line-clamp-2"><%= premio.descripcion %></p>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="text-sm text-slate-400">No se han registrado premios en este sorteo.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Location / Map -->
+      <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-6">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-lg font-black text-dark flex items-center space-x-2">
+            <span>📍</span> <span>Ubicación de Referencia</span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Dirección: <%= raffle.address %>, <%= raffle.city %>, <%= raffle.province %>, <%= raffle.country %></p>
+        </div>
+
+        <!-- Google Map view -->
+        <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-inner">
+          <div id="map" style="height: 300px; width: 100%;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column (Status, Live Countdown, Organizer, Share) -->
+    <div class="space-y-8">
+      <!-- Countdown / Stats Card / Winner Highlight -->
+      <div class="bg-gradient-to-b from-slate-900 to-slate-950 text-white rounded-3xl p-6 border border-slate-800 shadow-xl space-y-6">
+        <div class="text-center space-y-2">
+          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Estado del Sorteo</span>
+          <h4 class="text-lg font-extrabold text-white">
+            <%= raffle.status === 'finalizado' ? '🏆 FINALIZADO' : new Date(raffle.drawDate).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+          </h4>
+          <% if (raffle.status !== 'finalizado') { %>
+            <p class="text-xs text-slate-400 font-medium">Hora: <%= new Date(raffle.drawDate).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) %> hs</p>
+          <% } %>
+        </div>
+
+        <div class="border-t border-slate-800 pt-4 text-center space-y-3">
+          <% if (raffle.status === 'finalizado' && raffle.winner) { %>
+            <span class="text-[10px] text-emerald-400 font-black uppercase tracking-wider block">¡Tenemos un Ganador!</span>
+            <div class="bg-emerald-950/80 border border-emerald-500/30 p-4 rounded-2xl space-y-2">
+              <div class="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center text-xl mx-auto mb-1 animate-bounce">
+                👑
+              </div>
+              <span class="block text-sm font-black text-white"><%= raffle.winner.name %></span>
+              <span class="block text-xl font-black text-emerald-400 tracking-wider">Boleto #<%= padNumber(raffle.winningNumber, raffle.totalTickets) %></span>
+            </div>
+          <% } else { %>
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Tiempo Restante</span>
+            <div class="grid grid-cols-4 gap-2 text-center" id="countdownContainer">
+              <div class="bg-slate-900/60 border border-slate-800 p-2.5 rounded-xl">
+                <span class="block text-2xl font-black text-primary-light" id="cd-days">00</span>
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Días</span>
+              </div>
+              <div class="bg-slate-900/60 border border-slate-800 p-2.5 rounded-xl">
+                <span class="block text-2xl font-black text-primary-light" id="cd-hours">00</span>
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Horas</span>
+              </div>
+              <div class="bg-slate-900/60 border border-slate-800 p-2.5 rounded-xl">
+                <span class="block text-2xl font-black text-primary-light" id="cd-mins">00</span>
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Min</span>
+              </div>
+              <div class="bg-slate-900/60 border border-slate-800 p-2.5 rounded-xl">
+                <span class="block text-2xl font-black text-primary-light" id="cd-secs">00</span>
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wide">Seg</span>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Creator info -->
+      <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Organizado por</h3>
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center font-black text-white text-lg">
+            <%= raffle.creator ? raffle.creator.name.charAt(0).toUpperCase() : 'O' %>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-dark text-sm"><%= raffle.creator ? raffle.creator.name : 'Organizador verificado' %></h4>
+            <p class="text-xs text-slate-400 font-semibold">Miembro de RifaGo</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Share Box -->
+      <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-4 text-center">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Compartir este sorteo</h3>
+        <div class="flex justify-center space-x-3">
+          <button onclick="shareLink('whatsapp')" class="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-all font-bold text-lg" title="Compartir en WhatsApp">
+            💬
+          </button>
+          <button onclick="shareLink('facebook')" class="p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all font-bold text-lg" title="Compartir en Facebook">
+            👥
+          </button>
+          <button onclick="shareLink('copy')" class="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all font-bold text-lg" title="Copiar enlace">
+            🔗
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Global Data
+  const selectionMode = '<%= raffle.ticketSelectionMode %>';
+  const ticketPrice = <%= raffle.ticketPrice %>;
+  const maxPerBuyer = <%= raffle.maxPerBuyer %>;
+  const totalTickets = <%= raffle.totalTickets %>;
+  const drawDateVal = new Date('<%= raffle.drawDate.toISOString() %>').getTime();
+  let selectedTickets = [];
+  // Initialize user's existing own reservations
+  <% for (let i = 0; i < raffle.totalTickets; i++) { 
+       const numInfo = activeNumbers[i];
+       const isReserved = numInfo && numInfo.status === 'reserved';
+       const isOwnReservation = isReserved && locals.user && String(numInfo.user) === String(locals.user._id);
+       if (isOwnReservation) { %>
+         selectedTickets.push(<%= i %>);
+  <%   }
+     } %>
+
+  // Pad helper inside js
+  function padNumber(num, total) {
+    const padLen = String(total - 1).length;
+    return String(num).padStart(padLen, '0');
+  }
+
+  // Select random available tickets
+  function selectRandomTickets(count) {
+    const allBtns = Array.from(document.querySelectorAll('.ticket-btn'));
+    const availBtns = allBtns.filter(btn => btn.getAttribute('data-sold') === 'false');
+    const availNums = availBtns.map(btn => parseInt(btn.getAttribute('data-number')));
+    
+    const unselectedAvailNums = availNums.filter(num => !selectedTickets.includes(num));
+    
+    if (unselectedAvailNums.length === 0) {
+      alert('No quedan números disponibles para seleccionar.');
+      return;
+    }
+    
+    const remainingQuota = maxPerBuyer - selectedTickets.length;
+    if (remainingQuota <= 0) {
+      alert(`Ya has seleccionado el límite máximo de ${maxPerBuyer} números.`);
+      return;
+    }
+    
+    const selectCount = Math.min(count, remainingQuota, unselectedAvailNums.length);
+    
+    // Shuffle and pick
+    const shuffled = unselectedAvailNums.sort(() => 0.5 - Math.random());
+    const picked = shuffled.slice(0, selectCount);
+    
+    picked.forEach(num => {
+      selectedTickets.push(num);
+      const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+      if (btn) {
+        btn.classList.add('bg-primary', 'text-white', 'border-primary');
+        btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+      }
+    });
+    
+    updateCheckout();
+  }
+
+  // Clear all selections
+  function clearSelection() {
+    selectedTickets.forEach(num => {
+      const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+      if (btn) {
+        btn.classList.remove('bg-primary', 'text-white', 'border-primary');
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      }
+    });
+    selectedTickets = [];
+    updateCheckout();
+  }
+
+  // Toggle ticket selection in Manual Mode
+  function toggleTicketSelect(num) {
+    const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+    if (!btn || btn.getAttribute('data-sold') === 'true') return;
+
+    const index = selectedTickets.indexOf(num);
+    if (index > -1) {
+      // Unselect
+      selectedTickets.splice(index, 1);
+      btn.classList.remove('bg-primary', 'text-white', 'border-primary');
+      btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+    } else {
+      // Enforce limit
+      if (selectedTickets.length >= maxPerBuyer) {
+        alert(`Solo puedes seleccionar hasta ${maxPerBuyer} números por compra.`);
+        return;
+      }
+      // Select
+      selectedTickets.push(num);
+      btn.classList.add('bg-primary', 'text-white', 'border-primary');
+      btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+    }
+
+    updateCheckout();
+  }
+
+  // Filter grid items
+  function filterTickets() {
+    const query = document.getElementById('ticketSearch').value.trim();
+    const btns = document.querySelectorAll('.ticket-btn');
+    
+    btns.forEach(btn => {
+      const numStr = btn.getAttribute('data-str');
+      if (query && !numStr.includes(query)) {
+        btn.setAttribute('data-search-hidden', 'true');
+      } else {
+        btn.removeAttribute('data-search-hidden');
+      }
+    });
+    
+    applyGridFilters();
+  }
+
+  let currentFilter = 'all'; // all, avail, sold
+  function setGridFilter(filter) {
+    currentFilter = filter;
+    
+    // Update filter active styles
+    ['all', 'avail', 'sold'].forEach(f => {
+      const btn = document.getElementById(`filter-${f}`);
+      if (f === filter) {
+        btn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-dark shadow-sm transition-all";
+      } else {
+        btn.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+      }
+    });
+
+    applyGridFilters();
+  }
+
+  function applyGridFilters() {
+    const btns = document.querySelectorAll('.ticket-btn');
+    
+    btns.forEach(btn => {
+      const isSold = btn.getAttribute('data-sold') === 'true';
+      const isSearchHidden = btn.getAttribute('data-search-hidden') === 'true';
+      
+      let show = true;
+      if (currentFilter === 'avail' && isSold) show = false;
+      if (currentFilter === 'sold' && !isSold) show = false;
+      if (isSearchHidden) show = false;
+      
+      btn.style.display = show ? 'flex' : 'none';
+    });
+  }
+
+  // Adjust automatic mode quantity
+  function adjustAutoQuantity(amount) {
+    const input = document.getElementById('autoQuantity');
+    if (!input) return;
+
+    let val = parseInt(input.value) || 1;
+    val += amount;
+
+    const maxLimit = Math.min(maxPerBuyer, totalTickets - <%= soldNumbers.length %>);
+
+    if (val < 1) val = 1;
+    if (val > maxLimit) val = maxLimit;
+
+    input.value = val;
+    updateCheckout();
+  }
+
+  // Update payment form and bottom checkout summary
+  function updateCheckout() {
+    const checkoutSummary = document.getElementById('checkoutSummary');
+    const checkoutTotal = document.getElementById('checkoutTotal');
+    const formNumbers = document.getElementById('formNumbers');
+    const formQuantity = document.getElementById('formQuantity');
+    const tagsList = document.getElementById('selectedTagsList');
+    const detailSection = document.getElementById('selectedDetailSection');
+    const detailScroll = document.getElementById('selectedDetailScroll');
+    
+    if (selectionMode === 'manual') {
+      const qty = selectedTickets.length;
+      const total = qty * ticketPrice;
+      
+      if (qty === 0) {
+        checkoutSummary.innerText = 'Ningún número seleccionado';
+        tagsList.innerHTML = '';
+        if (detailSection) detailSection.classList.add('hidden');
+      } else {
+        checkoutSummary.innerText = `${qty} número${qty > 1 ? 's' : ''} seleccionado${qty > 1 ? 's' : ''}:`;
+        tagsList.innerHTML = selectedTickets
+          .map(n => `<span class="bg-primary/20 text-primary-light border border-primary/30 px-2 py-0.5 rounded text-[10px] font-black">${padNumber(n, totalTickets)}</span>`)
+          .join('');
+          
+        if (detailSection && detailScroll) {
+          detailSection.classList.remove('hidden');
+          detailScroll.innerHTML = selectedTickets
+            .map(n => `
+              <div class="flex-shrink-0 bg-white border border-slate-200 p-2 rounded-xl flex items-center space-x-2.5 shadow-sm">
+                <span class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-xs shadow-sm">${padNumber(n, totalTickets)}</span>
+                <div class="flex flex-col min-w-0 pr-1">
+                  <span class="text-[8px] font-black text-slate-400 uppercase tracking-wider">Costo</span>
+                  <span class="text-xs font-extrabold text-dark">$${ticketPrice.toLocaleString('es-AR')}</span>
+                </div>
+              </div>
+            `).join('');
+        }
+      }
+      
+      checkoutTotal.innerText = `$${total.toLocaleString('es-AR')} ARS`;
+      formNumbers.value = selectedTickets.join(',');
+      formQuantity.value = qty;
+    } else {
+      const input = document.getElementById('autoQuantity');
+      const qty = parseInt(input.value) || 1;
+      const total = qty * ticketPrice;
+      
+      checkoutSummary.innerText = `${qty} número${qty > 1 ? 's' : ''} asignado${qty > 1 ? 's' : ''} al azar`;
+      checkoutTotal.innerText = `$${total.toLocaleString('es-AR')} ARS`;
+      formNumbers.value = ''; // auto asignation by server
+      formQuantity.value = qty;
+      
+      if (detailSection) detailSection.classList.add('hidden');
+    }
+  }
+
+  // Countdown timer handler
+  const countdownContainer = document.getElementById('countdownContainer');
+  if (countdownContainer) {
+    const x = setInterval(function() {
+      const now = new Date().getTime();
+      const distance = drawDateVal - now;
+
+      if (distance < 0) {
+        clearInterval(x);
+        countdownContainer.innerHTML = `<div class="bg-red-500/20 border border-red-500/30 p-4 rounded-2xl col-span-4 text-center text-red-400 font-extrabold text-sm uppercase tracking-wider">¡Sorteo Cerrado!</div>`;
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
+      document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
+      document.getElementById('cd-mins').innerText = String(minutes).padStart(2, '0');
+      document.getElementById('cd-secs').innerText = String(seconds).padStart(2, '0');
+    }, 1000);
+  }
+
+  // Social link shares
+  function shareLink(platform) {
+    const url = window.location.href;
+    const title = '<%= raffle.title %>';
+    let shareUrl = '';
+
+    if (platform === 'whatsapp') {
+      shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent('Mira este increíble sorteo en RifaGo: ' + title + ' - ' + url)}`;
+    } else if (platform === 'facebook') {
+      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    } else if (platform === 'copy') {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Enlace copiado al portapapeles.');
+      }).catch(err => {
+        console.error('Error al copiar enlace:', err);
+      });
+      return;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+  }
+
+  // Google Maps Initialization inside view page
+  function initMap() {
+    const lat = <%= typeof raffle.latitude !== 'undefined' && raffle.latitude ? raffle.latitude : -34.6037 %>;
+    const lng = <%= typeof raffle.longitude !== 'undefined' && raffle.longitude ? raffle.longitude : -58.3816 %>;
+    const location = { lat, lng };
+
+    const map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 15,
+      center: location,
+      disableDefaultUI: false,
+      zoomControl: true,
+      mapTypeControl: false,
+      scaleControl: true,
+      streetViewControl: false,
+      rotateControl: false,
+      fullscreenControl: true
+    });
+
+    const marker = new google.maps.Marker({
+      position: location,
+      map: map,
+      title: '<%= raffle.title %>',
+      animation: google.maps.Animation.DROP
+    });
+
+    // Try to geocode address if lat/lng are default
+    <% if (typeof raffle.latitude === 'undefined' || !raffle.latitude) { %>
+      const addressStr = '<%= raffle.address %>, <%= raffle.city %>, <%= raffle.province %>, <%= raffle.country %>';
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: addressStr }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const loc = results[0].geometry.location;
+          map.setCenter(loc);
+          marker.setPosition(loc);
+        }
+      });
+    <% } %>
+  }
+
+  // Socket.IO real-time sync for ticket grids
+  const socket = io();
+  socket.emit('raffle:join', '<%= raffle._id %>');
+
+  socket.on('numbers:reserved', ({ numbers, userId }) => {
+    const currentUserId = '<%= locals.user ? locals.user._id : "" %>';
+    numbers.forEach(num => {
+      if (userId !== currentUserId) {
+        const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+        if (btn) {
+          btn.setAttribute('data-reserved', 'true');
+          btn.disabled = true;
+          btn.className = "ticket-btn h-10 rounded-lg text-xs font-extrabold flex items-center justify-center transition-all border relative overflow-hidden bg-amber-50/70 text-amber-500 border-amber-100 cursor-not-allowed select-none";
+          btn.innerHTML = `<span class="absolute text-[5px] text-amber-500 top-0.5 right-0.5">⏳</span><span>${padNumber(num, totalTickets)}</span>`;
+        }
+      }
+    });
+  });
+
+  socket.on('numbers:released', ({ numbers }) => {
+    numbers.forEach(num => {
+      const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+      if (btn) {
+        const idx = selectedTickets.indexOf(num);
+        if (idx > -1) {
+          selectedTickets.splice(idx, 1);
+          updateCheckout();
+        }
+        btn.removeAttribute('data-reserved');
+        btn.removeAttribute('data-pending');
+        btn.removeAttribute('data-sold');
+        btn.disabled = false;
+        btn.className = "ticket-btn h-10 rounded-lg text-xs font-extrabold flex items-center justify-center transition-all border relative overflow-hidden bg-white hover:bg-primary/5 hover:border-primary/30 border-slate-200 text-slate-700 shadow-sm hover:scale-105 active:scale-95";
+        btn.innerHTML = `
+          <span class="absolute left-[25%] top-0 bottom-0 border-r border-dotted border-slate-200"></span>
+          <span class="text-[5px] text-slate-400 absolute left-0.5 uppercase font-black tracking-tight" style="writing-mode: vertical-lr;">Rifa</span>
+          <span class="ml-2.5">${padNumber(num, totalTickets)}</span>
+        `;
+      }
+    });
+  });
+
+  socket.on('numbers:sold', ({ numbers }) => {
+    numbers.forEach(num => {
+      const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+      if (btn) {
+        const idx = selectedTickets.indexOf(num);
+        if (idx > -1) {
+          selectedTickets.splice(idx, 1);
+          updateCheckout();
+        }
+        btn.setAttribute('data-sold', 'true');
+        btn.disabled = true;
+        btn.className = "ticket-btn h-10 rounded-lg text-xs font-extrabold flex items-center justify-center transition-all border relative overflow-hidden bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed select-none";
+        btn.innerHTML = `<span class="absolute text-[5px] text-slate-300 top-0.5 right-0.5">🔒</span><span class="line-through opacity-40">${padNumber(num, totalTickets)}</span>`;
+      }
+    });
+  });
+
+  socket.on('purchase:pending_manual', ({ numbers }) => {
+    numbers.forEach(num => {
+      const btn = document.querySelector(`.ticket-btn[data-number="${num}"]`);
+      if (btn) {
+        const idx = selectedTickets.indexOf(num);
+        if (idx > -1) {
+          selectedTickets.splice(idx, 1);
+          updateCheckout();
+        }
+        btn.setAttribute('data-pending', 'true');
+        btn.disabled = true;
+        btn.className = "ticket-btn h-10 rounded-lg text-xs font-extrabold flex items-center justify-center transition-all border relative overflow-hidden bg-blue-50 text-blue-400 border-blue-100 cursor-not-allowed select-none";
+        btn.innerHTML = `<span class="absolute text-[5px] text-blue-400 top-0.5 right-0.5">⏳</span><span>${padNumber(num, totalTickets)}</span>`;
+      }
+    });
+  });
+
+  // Run initial checkout update
+  updateCheckout();
+</script>
+
+<% if (typeof googleMapsApiKey !== 'undefined' && googleMapsApiKey) { %>
+  <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleMapsApiKey %>&libraries=places&callback=initMap" async defer></script>
+<% } %>

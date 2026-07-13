@@ -1,0 +1,155 @@
+<header class="bg-dark text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- Brand Logo -->
+    <a href="/" class="flex items-center space-x-3 group">
+      <img src="/images/logo.png" alt="RifaGo Logo" class="w-10 h-10 object-contain transform group-hover:scale-105 transition-all duration-300">
+      <span class="font-extrabold text-2xl tracking-tight text-white">Rifa<span class="text-secondary group-hover:text-yellow-300 transition-colors">Go</span></span>
+    </a>
+
+    <!-- Desktop Navigation Links -->
+    <nav class="hidden md:flex items-center space-x-8">
+      <a href="/" class="text-gray-300 hover:text-white font-semibold transition-all relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-primary after:transition-all hover:after:w-full">Inicio</a>
+      <a href="/raffles" class="text-gray-300 hover:text-white font-semibold transition-all relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-primary after:transition-all hover:after:w-full">Sorteos</a>
+      <a href="/about" class="text-gray-300 hover:text-white font-semibold transition-all relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-primary after:transition-all hover:after:w-full">Nosotros</a>
+    </nav>
+
+    <!-- Desktop User Actions / Dropdown -->
+    <div class="hidden md:flex items-center space-x-4">
+      <% if (locals.user) { %>
+        <div class="relative">
+          <button id="userMenuBtn" class="flex items-center space-x-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 px-4 py-2 rounded-2xl transition-all focus:outline-none select-none">
+            <!-- User avatar placeholder -->
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-xs font-bold text-white uppercase">
+              <%= user.name.charAt(0) %>
+            </div>
+            <span class="text-sm font-bold text-white max-w-[120px] truncate"><%= user.name %></span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform duration-200" id="dropdownArrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          
+          <!-- Dropdown menu -->
+          <div id="userDropdown" class="hidden absolute right-0 mt-3 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl py-2 z-50">
+            <div class="px-4 py-3 border-b border-slate-800">
+              <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Rol de usuario</p>
+              <p class="text-sm font-bold text-white capitalize mt-0.5"><%= user.role %></p>
+            </div>
+            <a href="/user/profile" class="flex items-center space-x-2 px-4 py-3 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors">
+              <span>👤</span> <span>Mi Perfil</span>
+            </a>
+            <a href="/raffles/myraffles" class="flex items-center space-x-2 px-4 py-3 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors">
+              <span>🎟️</span> <span>Mis Sorteos</span>
+            </a>
+            <% if (user.role === 'admin') { %>
+              <a href="/admin/dashboard" class="flex items-center space-x-2 px-4 py-3 text-sm text-secondary hover:bg-slate-800 transition-colors font-semibold">
+                <span>🛡️</span> <span>Panel Administrador</span>
+              </a>
+            <% } %>
+            <div class="border-t border-slate-800 my-1"></div>
+            <a href="/auth/logout" class="flex items-center space-x-2 px-4 py-3 text-sm text-red-400 hover:bg-slate-800 hover:text-red-300 transition-colors font-semibold">
+              <span>🚪</span> <span>Cerrar Sesión</span>
+            </a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/auth/login" class="text-sm font-bold text-gray-300 hover:text-white transition-colors">Ingresar</a>
+        <a href="/auth/register" class="bg-gradient-to-r from-primary to-primary-light text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all duration-200">Registrarse</a>
+      <% } %>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <div class="flex items-center md:hidden space-x-4">
+      <% if (locals.user) { %>
+        <!-- Simple Profile Avatar link for Mobile quick view -->
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-xs font-bold text-white uppercase border border-slate-700">
+          <%= user.name.charAt(0) %>
+        </div>
+      <% } %>
+      <button id="mobileMenuBtn" class="text-gray-300 hover:text-white focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="hamburgerIcon">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="closeIcon">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobileDrawer" class="hidden md:hidden bg-slate-900 border-b border-slate-800 px-4 py-6 space-y-4">
+    <nav class="flex flex-col space-y-3">
+      <a href="/" class="text-gray-300 hover:text-white font-semibold py-2 transition-colors border-b border-slate-800/40">Inicio</a>
+      <a href="/raffles" class="text-gray-300 hover:text-white font-semibold py-2 transition-colors border-b border-slate-800/40">Sorteos</a>
+      <a href="/about" class="text-gray-300 hover:text-white font-semibold py-2 transition-colors">Nosotros</a>
+    </nav>
+    <div class="pt-4 border-t border-slate-800 flex flex-col space-y-3">
+      <% if (locals.user) { %>
+        <div class="px-2 pb-2">
+          <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Sesión como</p>
+          <p class="text-base font-bold text-white mt-0.5"><%= user.name %></p>
+        </div>
+        <a href="/user/profile" class="w-full text-center py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors">
+          Mi Perfil
+        </a>
+        <a href="/raffles/myraffles" class="w-full text-center py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors">
+          Mis Sorteos
+        </a>
+        <% if (user.role === 'admin') { %>
+          <a href="/admin/dashboard" class="w-full text-center py-3 bg-secondary text-dark font-black rounded-xl hover:bg-yellow-300 transition-colors">
+            Panel Administrador
+          </a>
+        <% } %>
+        <a href="/auth/logout" class="w-full text-center py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold rounded-xl transition-colors">
+          Cerrar Sesión
+        </a>
+      <% } else { %>
+        <a href="/auth/login" class="w-full text-center py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors">Ingresar</a>
+        <a href="/auth/register" class="w-full text-center py-3 bg-gradient-to-r from-primary to-primary-light text-white font-bold rounded-xl shadow-lg hover:shadow-primary/30 transition-all">Registrarse</a>
+      <% } %>
+    </div>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const hamburgerIcon = document.getElementById('hamburgerIcon');
+    const closeIcon = document.getElementById('closeIcon');
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener('click', () => {
+        const isHidden = mobileDrawer.classList.toggle('hidden');
+        hamburgerIcon.classList.toggle('hidden', !isHidden);
+        closeIcon.classList.toggle('hidden', isHidden);
+      });
+    }
+
+    // 2. Desktop Profile Dropdown Toggle
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const dropdownArrow = document.getElementById('dropdownArrow');
+
+    if (userMenuBtn) {
+      userMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = userDropdown.classList.toggle('hidden');
+        if (dropdownArrow) {
+          dropdownArrow.classList.toggle('rotate-180', !isHidden);
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+          userDropdown.classList.add('hidden');
+          if (dropdownArrow) {
+            dropdownArrow.classList.remove('rotate-180');
+          }
+        }
+      });
+    }
+  });
+</script>

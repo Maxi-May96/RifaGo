@@ -1,0 +1,597 @@
+<div class="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <!-- Top Bar with Page Header & Action -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-dark">Mis Sorteos</h1>
+      <p class="text-slate-500 text-sm mt-1">Administra los sorteos que organizas y consulta aquellos en los que participas.</p>
+    </div>
+    <div>
+      <a href="/raffles/create" class="inline-flex items-center justify-center bg-primary hover:bg-primary-light text-white font-extrabold px-6 py-3 rounded-2xl shadow-md hover:shadow-primary/20 transition-all text-sm">
+        <span class="mr-2">➕</span> Crear Sorteo
+      </a>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm font-bold px-4 py-3.5 rounded-xl shadow-sm animate-fade-in flex items-center space-x-2">
+      <span>⚠️</span> <span><%= error %></span>
+    </div>
+  <% } %>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold px-4 py-3.5 rounded-xl shadow-sm animate-fade-in flex items-center space-x-2">
+      <span>✅</span> <span><%= success %></span>
+    </div>
+  <% } %>
+
+  <!-- Pending Approvals Section for manual transfer checkout validation -->
+  <% if (typeof pendingPurchases !== 'undefined' && pendingPurchases.length > 0) { %>
+    <div class="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-200/80 rounded-3xl p-6 space-y-4 shadow-sm animate-pulse-subtle">
+      <div class="flex items-center justify-between border-b border-amber-200/50 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-xl">🏦</span>
+          <div>
+            <h2 class="text-sm font-black text-amber-900 uppercase tracking-wider">Aprobaciones de Transferencia Pendientes</h2>
+            <p class="text-xs text-amber-700 font-semibold mt-0.5">Los compradores han subido sus comprobantes. Confirma o rechaza los pagos para liberar/asignar los números.</p>
+          </div>
+        </div>
+        <span class="bg-amber-500 text-white font-extrabold px-3 py-1 rounded-full text-xs shadow-sm">
+          <%= pendingPurchases.length %> Pendiente<%= pendingPurchases.length > 1 ? 's' : '' %>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        <% pendingPurchases.forEach(p => { %>
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:border-amber-400">
+            <!-- Buyer & Raffle Info -->
+            <div class="space-y-3 flex-1">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs font-black text-amber-600 uppercase tracking-widest bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg"><%= p.raffle.title %></span>
+                <span class="text-slate-400 font-bold text-xs">•</span>
+                <span class="text-slate-500 text-xs font-extrabold"><%= new Date(p.createdAt).toLocaleDateString() %></span>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-slate-600 font-semibold">
+                <div>
+                  <span class="text-[9px] text-slate-400 block uppercase tracking-wider font-extrabold">Comprador</span>
+                  <span class="text-dark font-black"><%= p.user ? p.user.name : 'Invitado' %></span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block uppercase tracking-wider font-extrabold">Email / Teléfono</span>
+                  <span class="text-slate-500 truncate block"><%= p.user ? p.user.email : '—' %></span>
+                  <span class="text-slate-400 text-[10px] block"><%= p.user && p.user.phone ? p.user.phone : '—' %></span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block uppercase tracking-wider font-extrabold">Monto Total</span>
+                  <span class="text-emerald-600 font-black text-sm">$<%= p.amount.toLocaleString('es-AR') %></span>
+                </div>
+              </div>
+
+              <!-- Numbers Requested -->
+              <div class="space-y-1.5 pt-1">
+                <span class="text-[9px] text-slate-400 block uppercase tracking-wider font-extrabold">Números Solicitados</span>
+                <div class="flex flex-wrap gap-1">
+                  <% p.numbers.forEach(num => { %>
+                    <span class="bg-slate-100 border border-slate-200/80 px-2.5 py-0.5 rounded text-[10px] font-black text-dark">
+                      #<%= String(num).padStart(3, '0') %>
+                    </span>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Receipt & Actions -->
+            <div class="flex items-center gap-4 flex-shrink-0 self-end md:self-auto border-t border-slate-100 md:border-t-0 pt-3 md:pt-0 w-full md:w-auto justify-between md:justify-end">
+              <!-- Comprobante Preview Link -->
+              <% if (p.transferProof) { %>
+                <div class="text-center">
+                  <a href="<%= p.transferProof %>" target="_blank" class="block w-20 h-16 rounded-xl border border-slate-200 overflow-hidden relative group shadow-sm bg-slate-50">
+                    <img src="<%= p.transferProof %>" alt="Comprobante" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[8px] font-black uppercase">Zoom</div>
+                  </a>
+                </div>
+              <% } %>
+
+              <!-- Confirmation Buttons Forms -->
+              <div class="flex items-center space-x-2">
+                <!-- Reject -->
+                <form action="/purchases/manual-reject/<%= p._id %>" method="POST" onsubmit="return confirm('¿Estás seguro de rechazar este pago? Los números se liberarán de inmediato.')" class="inline">
+                  <button type="submit" class="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-black px-4 py-2.5 rounded-xl text-xs transition-colors shadow-sm cursor-pointer uppercase tracking-wider">
+                    Rechazar
+                  </button>
+                </form>
+
+                <!-- Accept -->
+                <form action="/purchases/manual-confirm/<%= p._id %>" method="POST" onsubmit="return confirm('¿Confirmas que recibiste la transferencia correspondiente?')" class="inline">
+                  <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2.5 rounded-xl text-xs transition-colors shadow-sm cursor-pointer uppercase tracking-wider">
+                    Aprobar Pago
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Tab Toggle Handles -->
+  <div class="border-b border-slate-200">
+    <nav class="flex space-x-8" aria-label="Tabs">
+      <button onclick="switchTab('created')" id="tab-created" class="border-primary text-primary border-b-2 py-4 px-1 text-sm font-extrabold flex items-center space-x-2 focus:outline-none">
+        <span>🎟️ Sorteos Creados</span>
+        <span class="ml-2 bg-primary/10 text-primary px-2 py-0.5 text-xs rounded-full"><%= createdRaffles.length %></span>
+      </button>
+      <button onclick="switchTab('participating')" id="tab-participating" class="border-transparent text-slate-500 hover:text-slate-700 border-b-2 py-4 px-1 text-sm font-bold flex items-center space-x-2 focus:outline-none">
+        <span>🤝 Sorteos donde Participo</span>
+        <span class="ml-2 bg-slate-100 text-slate-600 px-2 py-0.5 text-xs rounded-full"><%= participatedRaffles.length %></span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Tab 1: Creados (Created) -->
+  <div id="panel-created" class="space-y-6">
+    <!-- Filter Search Form -->
+    <form action="/raffles/myraffles" method="GET" class="bg-white p-5 rounded-3xl border border-borderCustom shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Buscar</label>
+        <input type="text" name="q" value="<%= filters.q %>" placeholder="Nombre del sorteo..." 
+               class="w-full px-4 py-2.5 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Estado</label>
+        <select name="status" class="w-full px-4 py-2.5 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+          <option value="">Todos</option>
+          <option value="borrador" <%= filters.status === 'borrador' ? 'selected' : '' %>>Borrador</option>
+          <option value="pendiente" <%= filters.status === 'pendiente' ? 'selected' : '' %>>Pendiente</option>
+          <option value="activo" <%= filters.status === 'activo' ? 'selected' : '' %>>Activo</option>
+          <option value="finalizado" <%= filters.status === 'finalizado' ? 'selected' : '' %>>Finalizado</option>
+          <option value="cancelado" <%= filters.status === 'cancelado' ? 'selected' : '' %>>Cancelado</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ordenar por</label>
+        <select name="sort" class="w-full px-4 py-2.5 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+          <option value="">Recientes</option>
+          <option value="date" <%= filters.sort === 'date' ? 'selected' : '' %>>Fecha Sorteo</option>
+          <option value="sales" <%= filters.sort === 'sales' ? 'selected' : '' %>>Mayor Ventas</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="flex-1 bg-dark hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
+          Filtrar
+        </button>
+        <a href="/raffles/myraffles" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center justify-center">
+          Limpiar
+        </a>
+      </div>
+    </form>
+
+    <!-- Created Raffles Cards list -->
+    <% if (createdRaffles.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% createdRaffles.forEach(raffle => { 
+          const pct = Math.round((raffle.soldTickets / raffle.totalTickets) * 100) || 0;
+          const statusLabels = {
+            'borrador': { text: 'Borrador', class: 'bg-slate-100 text-slate-600' },
+            'pendiente': { text: 'Pendiente', class: 'bg-yellow-50 text-yellow-700' },
+            'activo': { text: 'Activo', class: 'bg-emerald-50 text-emerald-700' },
+            'finalizado': { text: 'Finalizado', class: 'bg-blue-50 text-blue-700' },
+            'cancelado': { text: 'Cancelado', class: 'bg-red-50 text-red-700' }
+          };
+          const currentStatus = statusLabels[raffle.status] || { text: raffle.status, class: 'bg-slate-100 text-slate-600' };
+        %>
+          <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+            <!-- Header Image -->
+            <div class="relative h-48 bg-slate-100">
+              <img src="<%= raffle.image || '/imagen/logo.png' %>" alt="Premio" class="w-full h-full object-cover">
+              <span class="absolute top-4 right-4 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full shadow-sm <%= currentStatus.class %>">
+                <%= currentStatus.text %>
+              </span>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs text-slate-400 font-bold uppercase">
+                  <span>📍 <%= raffle.city %>, <%= raffle.province %></span>
+                </div>
+                <h3 class="text-lg font-black text-dark leading-snug"><%= raffle.title %></h3>
+                <p class="text-xs text-slate-500 line-clamp-2"><%= raffle.description %></p>
+              </div>
+
+              <!-- Ticket Sale Progress -->
+              <div class="space-y-1.5 pt-2">
+                <div class="flex justify-between text-xs font-bold text-slate-500">
+                  <span>Vendido: <%= pct %>%</span>
+                  <span><%= raffle.soldTickets %> / <%= raffle.totalTickets %> Nros</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-primary h-full transition-all duration-500" style="width: <%= pct %>%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-400 font-semibold">
+                  <span>Disponibles: <%= raffle.totalTickets - raffle.soldTickets %></span>
+                  <span>Precio: $<%= raffle.ticketPrice %></span>
+                </div>
+              </div>
+
+              <!-- Winner Banner or Countdown Timer -->
+              <% if (raffle.status === 'finalizado' && raffle.winner) { %>
+                <!-- Winner Highlight Banner -->
+                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">🏆</span>
+                    <div class="flex flex-col">
+                      <span class="text-[9px] text-emerald-700 font-black uppercase tracking-wider">Ganador</span>
+                      <span class="font-extrabold text-dark"><%= raffle.winner.name %></span>
+                    </div>
+                  </div>
+                  <div class="bg-emerald-600 text-white font-black px-2.5 py-1 rounded-xl text-xs">
+                    Nro #<%= raffle.winningNumber %>
+                  </div>
+                </div>
+              <% } else { %>
+                <!-- Countdown Timer -->
+                <div class="bg-slate-50 rounded-2xl p-3 flex items-center justify-between text-xs">
+                  <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Fecha Sorteo:</span>
+                  <span class="font-extrabold text-dark countdown-timer" data-date="<%= raffle.drawDate.toISOString() %>">
+                    Cargando...
+                  </span>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Footer Action Triggers -->
+            <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-wrap gap-2 justify-between items-center">
+              <div class="flex items-center space-x-2">
+                <!-- Share Button -->
+                <button onclick="openShareModal('<%= raffle.title %>', '/raffles/<%= raffle.slug %>')" class="p-2 bg-white rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors text-xs font-bold" title="Compartir Sorteo">
+                  🔗
+                </button>
+                <!-- Duplicate Button -->
+                <form action="/raffles/<%= raffle._id %>/duplicate" method="POST" class="inline">
+                  <button type="submit" class="p-2 bg-white rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors text-xs font-bold" title="Duplicar Sorteo">
+                    📋
+                  </button>
+                </form>
+                <!-- Export Buyers List -->
+                <% if (raffle.soldTickets > 0) { %>
+                  <a href="/raffles/<%= raffle._id %>/export" class="p-2 bg-white rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors text-xs font-bold" title="Exportar Excel Compradores">
+                    📥
+                  </a>
+                <% } %>
+                <!-- Delete Button -->
+                <% if (raffle.soldTickets === 0) { %>
+                  <form action="/raffles/<%= raffle._id %>/delete" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este sorteo?')">
+                    <button type="submit" class="p-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-xl transition-colors text-xs font-bold" title="Eliminar Sorteo">
+                      🗑️
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+
+              <!-- Main actions -->
+              <div class="flex items-center space-x-1.5">
+                <% if (raffle.status === 'activo') { %>
+                  <form action="/raffles/<%= raffle._id %>/draw" method="POST" class="inline animate-pulse" onsubmit="return confirm('¿Estás seguro de realizar el sorteo en este momento?')">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl transition-all shadow-sm flex items-center space-x-1 cursor-pointer">
+                      <span>🎲</span> <span>Sortear ahora</span>
+                    </button>
+                  </form>
+                <% } %>
+                
+                <% if (raffle.status === 'finalizado' && raffle.winner) { %>
+                  <button type="button" 
+                          onclick="showWinnerModal('<%= raffle.title %>', '<%= raffle.winner.name %>', '<%= raffle.winner.email %>', '<%= raffle.winner.phone || 'No registrado' %>', '<%= raffle.winningNumber %>')"
+                          class="bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl transition-all shadow-sm flex items-center space-x-1 cursor-pointer">
+                    <span>🏆</span> <span>Ver ganador</span>
+                  </button>
+                <% } %>
+
+                <a href="/raffles/<%= raffle.slug %>" class="bg-dark hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl transition-colors">
+                  Ver detalle
+                </a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="bg-white rounded-3xl border border-borderCustom p-12 text-center text-slate-400 space-y-3">
+        <span class="text-4xl">🎟️</span>
+        <h4 class="font-bold text-dark">No has creado ningún sorteo aún</h4>
+        <p class="text-sm text-slate-500 max-w-md mx-auto">Comienza a organizar tu primera rifa presionando el botón "Crear Sorteo".</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Tab 2: Participando (Participating) -->
+  <div id="panel-participating" class="space-y-6 hidden animate-fade-in">
+    <% if (participatedRaffles.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% participatedRaffles.forEach(item => { 
+          const r = item.raffle;
+          const statusLabels = {
+            'borrador': { text: 'Borrador', class: 'bg-slate-100 text-slate-600' },
+            'pendiente': { text: 'Pendiente', class: 'bg-yellow-50 text-yellow-700' },
+            'activo': { text: 'Activo', class: 'bg-emerald-50 text-emerald-700' },
+            'finalizado': { text: 'Finalizado', class: 'bg-blue-50 text-blue-700' },
+            'cancelado': { text: 'Cancelado', class: 'bg-red-50 text-red-700' }
+          };
+          const currentStatus = statusLabels[r.status] || { text: r.status, class: 'bg-slate-100 text-slate-600' };
+        %>
+          <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+            <!-- Header Image -->
+            <div class="relative h-48 bg-slate-100">
+              <img src="<%= r.image || '/imagen/logo.png' %>" alt="Premio" class="w-full h-full object-cover">
+              <span class="absolute top-4 right-4 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full shadow-sm <%= currentStatus.class %>">
+                <%= currentStatus.text %>
+              </span>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs text-slate-400 font-bold uppercase">
+                  <span>Organizador: <%= r.creator ? r.creator.name : 'RifaGo' %></span>
+                </div>
+                <h3 class="text-lg font-black text-dark leading-snug"><%= r.title %></h3>
+                <p class="text-[11px] text-slate-400">Fecha Compra: <%= new Date(item.purchaseDate).toLocaleDateString() %></p>
+              </div>
+
+              <!-- My purchased numbers -->
+              <div class="bg-primary/5 border border-primary/10 rounded-2xl p-4 space-y-2">
+                <span class="text-xs font-bold text-primary block uppercase tracking-wider text-[10px]">Mis Números:</span>
+                <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                  <% item.myTickets.forEach(num => { %>
+                    <span class="inline-block bg-primary text-white text-[11px] font-black px-2.5 py-1 rounded-lg">
+                      <%= String(num).padStart(3, '0') %>
+                    </span>
+                  <% }) %>
+                </div>
+              </div>
+
+              <!-- Countdown Timer -->
+              <div class="bg-slate-50 rounded-2xl p-3 flex items-center justify-between text-xs">
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Draw Date:</span>
+                <span class="font-extrabold text-dark countdown-timer" data-date="<%= r.drawDate.toISOString() %>">
+                  Cargando...
+                </span>
+              </div>
+            </div>
+
+            <!-- Footer Action Triggers -->
+            <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
+              <button onclick="openShareModal('<%= r.title %>', '/raffles/<%= r.slug %>')" class="p-2 bg-white rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors text-xs font-bold" title="Compartir Sorteo">
+                🔗 Compartir
+              </button>
+              <a href="/raffles/<%= r.slug %>" class="bg-dark hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors">
+                Ver detalle
+              </a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="bg-white rounded-3xl border border-borderCustom p-12 text-center text-slate-400 space-y-3">
+        <span class="text-4xl">🤝</span>
+        <h4 class="font-bold text-dark">No estás participando en ningún sorteo</h4>
+        <p class="text-sm text-slate-500 max-w-md mx-auto">Explora sorteos disponibles en la plataforma y compra un número para ganar premios.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Modal Dialog for Sharing & QR Code representation -->
+<div id="shareModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl max-w-md w-full border border-borderCustom shadow-2xl overflow-hidden p-6 space-y-6 animate-fade-in">
+    <!-- Header -->
+    <div class="flex justify-between items-start">
+      <div>
+        <h3 class="text-lg font-black text-dark" id="shareRaffleTitle">Compartir Sorteo</h3>
+        <p class="text-xs text-slate-400 mt-1">Comparte con tus amigos y redes para acelerar las ventas.</p>
+      </div>
+      <button onclick="closeShareModal()" class="text-slate-400 hover:text-dark font-extrabold text-2xl focus:outline-none">&times;</button>
+    </div>
+
+    <!-- QR Code Display -->
+    <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+      <img id="shareQR" src="" alt="QR Sorteo" class="w-36 h-36 bg-white p-2 rounded-xl border border-slate-200">
+      <span class="text-[10px] text-slate-400 font-bold uppercase">Código QR del Sorteo</span>
+    </div>
+
+    <!-- Link Copier -->
+    <div class="space-y-2">
+      <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Enlace del sorteo</label>
+      <div class="flex space-x-2">
+        <input type="text" id="shareUrl" readonly class="flex-1 bg-slate-50 px-3 py-2 text-xs rounded-xl border border-slate-200 text-slate-600 focus:outline-none">
+        <button onclick="copyShareUrl()" class="bg-primary hover:bg-primary-light text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm">
+          Copiar
+        </button>
+      </div>
+      <span id="copySuccessMsg" class="hidden text-xs text-emerald-600 font-bold block pt-1">¡Enlace copiado con éxito!</span>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end pt-2">
+      <button onclick="closeShareModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-100 transition-colors text-xs">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Switch Tabs Panel
+  function switchTab(tab) {
+    const createdBtn = document.getElementById('tab-created');
+    const participatingBtn = document.getElementById('tab-participating');
+    const createdPanel = document.getElementById('panel-created');
+    const participatingPanel = document.getElementById('panel-participating');
+
+    if (tab === 'created') {
+      // Toggle button classes
+      createdBtn.className = "border-primary text-primary border-b-2 py-4 px-1 text-sm font-extrabold flex items-center space-x-2 focus:outline-none";
+      participatingBtn.className = "border-transparent text-slate-500 hover:text-slate-700 border-b-2 py-4 px-1 text-sm font-bold flex items-center space-x-2 focus:outline-none";
+      // Toggle panels
+      createdPanel.classList.remove('hidden');
+      participatingPanel.classList.add('hidden');
+    } else {
+      // Toggle button classes
+      createdBtn.className = "border-transparent text-slate-500 hover:text-slate-700 border-b-2 py-4 px-1 text-sm font-bold flex items-center space-x-2 focus:outline-none";
+      participatingBtn.className = "border-primary text-primary border-b-2 py-4 px-1 text-sm font-extrabold flex items-center space-x-2 focus:outline-none";
+      // Toggle panels
+      createdPanel.classList.add('hidden');
+      participatingPanel.classList.remove('hidden');
+    }
+  }
+
+  // 2. Share Modal & QR Generation
+  function openShareModal(raffleTitle, relativeUrl) {
+    document.getElementById('shareRaffleTitle').innerText = raffleTitle;
+    
+    // Construct full URL
+    const fullUrl = window.location.origin + relativeUrl;
+    document.getElementById('shareUrl').value = fullUrl;
+    
+    // Generate QR using public API
+    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(fullUrl);
+    document.getElementById('shareQR').src = qrUrl;
+
+    document.getElementById('copySuccessMsg').classList.add('hidden');
+    document.getElementById('shareModal').classList.remove('hidden');
+  }
+
+  function closeShareModal() {
+    document.getElementById('shareModal').classList.add('hidden');
+  }
+
+  function copyShareUrl() {
+    const copyText = document.getElementById('shareUrl');
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+    document.getElementById('copySuccessMsg').classList.remove('hidden');
+  }
+
+  // 3. Countdown Timers
+  function updateCountdowns() {
+    const timerElements = document.querySelectorAll('.countdown-timer');
+    timerElements.forEach(elem => {
+      const targetDate = new Date(elem.getAttribute('data-date')).getTime();
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        elem.innerText = "¡Sorteado!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      let text = '';
+      if (days > 0) text += days + 'd ';
+      text += hours.toString().padStart(2, '0') + 'h ' + 
+              minutes.toString().padStart(2, '0') + 'm ' + 
+              seconds.toString().padStart(2, '0') + 's';
+
+      elem.innerText = text;
+    });
+  }
+
+  // Run timer ticking
+  setInterval(updateCountdowns, 1000);
+  updateCountdowns();
+
+  // 4. Winner Modal Handlers
+  function showWinnerModal(raffleTitle, winnerName, winnerEmail, winnerPhone, winningNumber) {
+    document.getElementById('wModalRaffleTitle').innerText = raffleTitle;
+    document.getElementById('wModalWinnerName').innerText = winnerName;
+    document.getElementById('wModalWinnerEmail').innerText = winnerEmail;
+    document.getElementById('wModalWinnerPhone').innerText = winnerPhone;
+    document.getElementById('wModalWinnerNumber').innerText = '#' + winningNumber;
+    
+    document.getElementById('winnerModal').classList.remove('hidden');
+  }
+
+  function closeWinnerModal() {
+    document.getElementById('winnerModal').classList.add('hidden');
+  }
+  
+  // Close winner modal on clicking backdrop
+  window.addEventListener('click', (e) => {
+    const modal = document.getElementById('winnerModal');
+    if (e.target === modal) {
+      closeWinnerModal();
+    }
+  });
+
+  // Socket.IO real-time notification for manual confirmations
+  const socket = io();
+  
+  // Join all created raffle rooms to listen to purchase notifications
+  <% createdRaffles.forEach(raffle => { %>
+    socket.emit('raffle:join', '<%= raffle._id %>');
+  <% }) %>
+
+  socket.on('purchase:pending_manual', ({ buyerName, numbers }) => {
+    // Notify organizer in real-time and reload list
+    // Use an elegant notification instead of raw alert if possible, or reload directly
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  });
+</script>
+
+<!-- Modal Dialog for Winner View -->
+<div id="winnerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl max-w-md w-full border border-borderCustom shadow-2xl overflow-hidden flex flex-col animate-fade-in relative">
+    
+    <!-- Decorative Crown/Trophy Icon Header -->
+    <div class="bg-gradient-to-br from-primary to-primary-light p-8 text-center text-white relative">
+      <div class="absolute top-4 right-4">
+        <button onclick="closeWinnerModal()" class="text-white/80 hover:text-white font-bold text-2xl focus:outline-none">&times;</button>
+      </div>
+      <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 animate-bounce">
+        🏆
+      </div>
+      <h3 class="text-lg font-black tracking-tight" id="wModalRaffleTitle">¡Sorteo Finalizado!</h3>
+      <p class="text-[10px] text-white/80 mt-1">Detalles del ticket ganador seleccionado al azar</p>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 space-y-4">
+      <!-- Winner details -->
+      <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-slate-400 font-bold uppercase tracking-wider">Ganador</span>
+          <span class="font-black text-dark text-sm" id="wModalWinnerName">—</span>
+        </div>
+        <div class="flex justify-between items-center text-xs border-t border-slate-200/50 pt-2">
+          <span class="text-slate-400 font-bold uppercase tracking-wider">Email</span>
+          <span class="font-bold text-slate-600" id="wModalWinnerEmail">—</span>
+        </div>
+        <div class="flex justify-between items-center text-xs border-t border-slate-200/50 pt-2">
+          <span class="text-slate-400 font-bold uppercase tracking-wider">Teléfono</span>
+          <span class="font-bold text-slate-600" id="wModalWinnerPhone">—</span>
+        </div>
+      </div>
+
+      <!-- Winning Number details -->
+      <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 text-center space-y-1">
+        <span class="text-[10px] text-emerald-700 font-black uppercase tracking-wider block">Número Ganador</span>
+        <span class="text-3xl font-black text-emerald-800 tracking-wider block" id="wModalWinnerNumber">#00</span>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="px-6 py-4 border-t border-slate-100 flex justify-end bg-slate-50">
+      <button onclick="closeWinnerModal()" class="px-5 py-2.5 bg-dark hover:bg-slate-800 text-white font-extrabold rounded-xl transition-colors text-sm w-full cursor-pointer">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

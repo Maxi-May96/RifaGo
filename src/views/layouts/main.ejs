@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-grayCustom text-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%- typeof title !== 'undefined' ? title : 'RifaGo - Sorteos y Rifas Online' %></title>
+  <link rel="shortcut icon" href="/images/logo.ico" type="image/x-icon">
+  
+  <!-- Font Integration -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind Output Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-full">
+
+  <!-- Header / Navigation Bar -->
+  <%- include('../partials/header.ejs') %>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <%- body %>
+  </main>
+
+  <!-- Footer -->
+  <%- include('../partials/footer.ejs') %>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

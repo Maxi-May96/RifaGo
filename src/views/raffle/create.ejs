@@ -1,0 +1,1064 @@
+<style>
+  .pac-container {
+    z-index: 9999 !important;
+  }
+</style>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="mb-8 border-b border-slate-100 pb-4">
+    <h1 class="text-3xl font-extrabold tracking-tight text-dark">Crear Nuevo Sorteo</h1>
+    <p class="text-slate-500 text-sm mt-1">Completa los pasos del asistente para dar de alta tu sorteo en la plataforma.</p>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-4 py-3 rounded-xl mb-6">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <!-- Wizard Layout Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Sidebar Indicators (Desktop) -->
+    <div class="lg:col-span-1 space-y-3">
+      <div class="bg-white rounded-3xl border border-borderCustom p-5 shadow-sm space-y-4">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pasos</h4>
+        <nav class="space-y-2" id="stepIndicatorContainer">
+          <div class="step-indicator active-step flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl transition-all" data-step="1">
+            <span class="step-num w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs">1</span>
+            <span class="step-label text-primary">Información</span>
+          </div>
+          <div class="step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-slate-400 transition-all" data-step="2">
+            <span class="step-num w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs">2</span>
+            <span class="step-label">Ubicación</span>
+          </div>
+          <div class="step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-slate-400 transition-all" data-step="3">
+            <span class="step-num w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs">3</span>
+            <span class="step-label">Configuración</span>
+          </div>
+          <div class="step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-slate-400 transition-all" data-step="4">
+            <span class="step-num w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs">4</span>
+            <span class="step-label">Premios</span>
+          </div>
+          <div class="step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-slate-400 transition-all" data-step="5">
+            <span class="step-num w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs">5</span>
+            <span class="step-label">Galería</span>
+          </div>
+          <div class="step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-slate-400 transition-all" data-step="6">
+            <span class="step-num w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs">6</span>
+            <span class="step-label">Confirmación</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Wizard Form Panels -->
+    <div class="lg:col-span-3">
+      <form id="raffleForm" action="/raffles/create" method="POST" enctype="multipart/form-data" class="space-y-6">
+        
+        <!-- Hidden input for final publish intent -->
+        <input type="hidden" name="publishImmediately" id="publishImmediately" value="false">
+
+        <!-- ================= PASO 1 ================= -->
+        <div class="wizard-panel bg-white p-6 rounded-3xl border border-borderCustom shadow-sm space-y-6" id="panel-1">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xl font-extrabold text-dark">Paso 1: Información General</h2>
+            <p class="text-xs text-slate-400 mt-1">Completa los datos básicos sobre el motivo y temática de tu sorteo.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Título del Sorteo *</label>
+              <input type="text" name="title" id="in-title" required placeholder="Ej: Rifa Solidaria para operar a Firulais"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Motivo del Sorteo *</label>
+              <input type="text" name="motivo" id="in-motivo" required placeholder="Ej: Recaudación de fondos médicos"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Descripción Completa *</label>
+              <textarea name="description" id="in-description" required rows="4" placeholder="Describe detalladamente el motivo de la rifa y cómo se entregarán los premios..."
+                        class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"></textarea>
+            </div>
+
+
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Cantidad de Premios *</label>
+              <input type="number" name="premioCount" id="in-premioCount" min="1" max="10" value="1" onchange="generatePrizeRows()" required
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha del Sorteo *</label>
+              <input type="date" name="drawDate" id="in-drawDate" required
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Hora del Sorteo *</label>
+              <input type="time" name="drawTime" id="in-drawTime" required
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Zona Horaria *</label>
+              <select name="timezone" id="in-timezone" required class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires (GMT-3)</option>
+                <option value="America/Santiago">America/Santiago (GMT-3 / GMT-4)</option>
+                <option value="America/Bogota">America/Bogota (GMT-5)</option>
+                <option value="America/Mexico_City">America/Mexico_City (GMT-6)</option>
+                <option value="America/New_York">America/New_York (GMT-5)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PASO 2 ================= -->
+        <div class="wizard-panel bg-white p-6 rounded-3xl border border-borderCustom shadow-sm space-y-6 hidden" id="panel-2">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xl font-extrabold text-dark">Paso 2: Ubicación del Sorteo</h2>
+            <p class="text-xs text-slate-400 mt-1">Ingresa el alcance y ubicación donde se entregará físicamente el premio.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Search Autocomplete Input (Full-width) -->
+            <div class="md:col-span-2 space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Buscar Dirección (Google Maps)</label>
+              <input type="text" id="mapSearchInput" placeholder="Escribe una calle, plaza o ciudad..."
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <!-- Google Map visual component (Full-width) -->
+            <div class="md:col-span-2">
+              <div id="map" style="height: 350px; min-height: 350px; width: 100%;" class="w-full rounded-3xl border border-slate-200 overflow-hidden shadow-sm bg-slate-50 flex items-center justify-center text-slate-400 text-xs font-bold">
+                Cargando mapa interactivo...
+              </div>
+              <div id="mapsDebug" class="hidden bg-slate-50 border border-slate-200 p-3 rounded-2xl text-[10px] font-mono text-slate-500 mt-3 whitespace-pre-wrap"></div>
+            </div>
+
+            <input type="hidden" name="latitude" id="in-latitude" value="">
+            <input type="hidden" name="longitude" id="in-longitude" value="">
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">País *</label>
+              <input type="text" name="country" id="in-country" required value="Argentina"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Provincia / Estado *</label>
+              <input type="text" name="province" id="in-province" required placeholder="Ej: Buenos Aires"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Ciudad *</label>
+              <input type="text" name="city" id="in-city" required placeholder="Ej: La Plata"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Dirección (Opcional)</label>
+              <input type="text" name="address" id="in-address" placeholder="Ej: Calle 50 nro 123"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PASO 3 ================= -->
+        <div class="wizard-panel bg-white p-6 rounded-3xl border border-borderCustom shadow-sm space-y-6 hidden" id="panel-3">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xl font-extrabold text-dark">Paso 3: Configuración y Límites</h2>
+            <p class="text-xs text-slate-400 mt-1">Controla los precios y límites de compra de números.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Cantidad de Números Disponibles *</label>
+              <div class="flex items-center space-x-2">
+                <button type="button" onclick="adjustTickets(-50)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold w-12 h-12 rounded-xl flex items-center justify-center text-lg transition-colors focus:outline-none shadow-sm">
+                  -
+                </button>
+                <input type="number" name="totalTickets" id="in-totalTickets" value="100" readonly required
+                       class="w-32 text-center font-black text-lg py-2.5 rounded-xl border border-borderCustom bg-slate-50 focus:outline-none">
+                <button type="button" onclick="adjustTickets(50)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold w-12 h-12 rounded-xl flex items-center justify-center text-lg transition-colors focus:outline-none shadow-sm">
+                  +
+                </button>
+              </div>
+              
+              <!-- Dynamic Price Badge -->
+              <div class="mt-2 flex items-center space-x-2">
+                <span id="planBadge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-primary/10 text-primary">Tarifa</span>
+                <span class="text-xs font-bold text-slate-500">Costo del Sorteo: <span id="planPrice" class="text-dark font-black text-sm">$3.000 ARS</span></span>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Precio por Número (ARS) *</label>
+              <input type="number" name="ticketPrice" id="in-ticketPrice" min="0" step="100" required placeholder="Ej: 500"
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Límite de Números por Comprador *</label>
+              <input type="number" name="maxPerBuyer" id="in-maxPerBuyer" min="1" max="50" value="10" required
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Asignación de Números *</label>
+              <select name="ticketSelectionMode" id="in-ticketSelectionMode" required class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                <option value="auto">Automática (El sistema asigna los números aleatoriamente)</option>
+                <option value="manual">Manual (El comprador selecciona sus números de la grilla)</option>
+              </select>
+            </div>
+
+            <!-- Ticket Payment Method Selection -->
+            <div class="space-y-3 border-t border-slate-100 pt-4 md:col-span-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Método de cobro de tus boletos *</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- RifaGo (Mercado Pago) -->
+                <label class="relative flex flex-col p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-primary/50 transition-all select-none" id="label-pay-rifago">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xl">💳</span>
+                      <span class="font-extrabold text-sm text-dark">RifaGo (Mercado Pago)</span>
+                    </div>
+                    <input type="radio" name="paymentMode" value="rifago" checked onchange="togglePaymentFields()" class="w-4 h-4 text-primary focus:ring-primary">
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-2">Procesamos los pagos mediante Mercado Pago. El comprador recibe sus números al instante. Retirás tu saldo acumulado cuando quieras.</p>
+                </label>
+
+                <!-- Cobro Manual (Transferencia) -->
+                <label class="relative flex flex-col p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-primary/50 transition-all select-none" id="label-pay-manual">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xl">🏦</span>
+                      <span class="font-extrabold text-sm text-dark">Transferencia Bancaria</span>
+                    </div>
+                    <input type="radio" name="paymentMode" value="manual" onchange="togglePaymentFields()" class="w-4 h-4 text-primary focus:ring-primary">
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-2">Los compradores te transfieren directamente a tu cuenta. Vos deberás verificar sus comprobantes y confirmar sus números manualmente.</p>
+                </label>
+              </div>
+            </div>
+
+            <!-- Manual Payment Details Forms -->
+            <div id="manual-payment-fields" class="hidden md:col-span-2 space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 mt-2">
+              <h4 class="font-bold text-dark text-xs uppercase tracking-wider text-primary">Datos para recibir transferencias</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="space-y-2">
+                  <label class="block text-[11px] font-bold text-slate-500 uppercase">Banco / Proveedor *</label>
+                  <input type="text" name="transfer_bank" id="in-transfer-bank" placeholder="Ej: Mercado Pago, Galicia" class="w-full px-4 py-2.5 text-xs rounded-xl border border-borderCustom focus:outline-none">
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-[11px] font-bold text-slate-500 uppercase">CBU / CVU *</label>
+                  <input type="text" name="transfer_cbu" id="in-transfer-cbu" placeholder="Ej: 00000031000..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-borderCustom focus:outline-none">
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-[11px] font-bold text-slate-500 uppercase">Alias *</label>
+                  <input type="text" name="transfer_alias" id="in-transfer-alias" placeholder="Ej: mi.rifa.go" class="w-full px-4 py-2.5 text-xs rounded-xl border border-borderCustom focus:outline-none">
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-[11px] font-bold text-slate-500 uppercase">Instrucciones de Pago</label>
+                <textarea name="transfer_instructions" id="in-transfer-instructions" rows="2" placeholder="Ej: Envía el comprobante adjuntando captura de pantalla. Las confirmaciones tardan hasta 24hs." class="w-full px-4 py-2 text-xs rounded-xl border border-borderCustom focus:outline-none"></textarea>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Código de Descuento (Admin)</label>
+              <div class="flex space-x-2">
+                <input type="text" id="in-couponCode" name="couponCode" placeholder="Ej: RIFAGO50"
+                       class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all uppercase">
+                <button type="button" onclick="applyCoupon()" class="px-5 py-3 text-xs bg-dark hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-sm">
+                  Aplicar
+                </button>
+              </div>
+              <p id="couponMsg" class="hidden text-xs mt-1 font-semibold"></p>
+              <input type="hidden" name="creationCost" id="in-creationCost" value="3000">
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PASO 4 ================= -->
+        <div class="wizard-panel bg-white p-6 rounded-3xl border border-borderCustom shadow-sm space-y-6 hidden" id="panel-4">
+          <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-extrabold text-dark">Paso 4: Premios</h2>
+              <p class="text-xs text-slate-400 mt-1">Registra los premios que se entregarán en orden de ganadores.</p>
+            </div>
+            <button type="button" onclick="addPrizeRow()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs transition-colors">
+              ＋ Agregar Premio
+            </button>
+          </div>
+
+          <!-- Dynamic Prizes Grid -->
+          <div class="space-y-4" id="prizesContainer">
+            <!-- Row items will be generated here -->
+          </div>
+        </div>
+
+        <!-- ================= PASO 5 ================= -->
+        <div class="wizard-panel bg-white p-6 rounded-3xl border border-borderCustom shadow-sm space-y-6 hidden" id="panel-5">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xl font-extrabold text-dark">Paso 5: Galería de Imágenes</h2>
+            <p class="text-xs text-slate-400 mt-1">Sube la portada principal y fotos adicionales de los premios.</p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Main Image Cover -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Imagen Principal / Portada *</label>
+              <div class="flex items-center space-x-6">
+                <div class="w-32 h-24 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                  <img id="mainImagePreview" src="" alt="Portada" class="w-full h-full object-cover hidden">
+                  <span id="mainImagePlaceholder" class="text-slate-400 text-xs">Sin imagen</span>
+                </div>
+                <input type="file" name="image" id="in-image" accept="image/*" required onchange="previewImage(this, 'mainImagePreview', 'mainImagePlaceholder')"
+                       class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer">
+              </div>
+            </div>
+
+            <!-- Additional Gallery Images -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Imágenes Adicionales (Hasta 10)</label>
+              <div class="border-2 border-dashed border-slate-200 rounded-3xl p-6 text-center hover:border-primary transition-colors relative cursor-pointer" id="dropzone">
+                <input type="file" name="images" id="in-images" accept="image/*" multiple onchange="handleGallerySelect(this)"
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                <span class="text-2xl">📸</span>
+                <p class="text-xs text-slate-500 font-semibold mt-2">Arrastra imágenes aquí o haz clic para seleccionar</p>
+                <p class="text-[10px] text-slate-400 mt-1">Formatos permitidos: JPG, PNG. Tamaño máximo: 5MB cada una.</p>
+              </div>
+
+              <!-- Gallery Previews Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 pt-4" id="galleryPreviewContainer">
+                <!-- Preview cards -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= PASO 6 ================= -->
+        <div class="wizard-panel bg-white p-6 rounded-3xl border border-borderCustom shadow-sm space-y-6 hidden" id="panel-6">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-xl font-extrabold text-dark">Paso 6: Confirmación del Sorteo</h2>
+            <p class="text-xs text-slate-400 mt-1">Revisa el resumen antes de publicar o guardar el borrador.</p>
+          </div>
+
+          <!-- Summary Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm">
+            <div class="space-y-3">
+              <h4 class="font-bold text-dark text-xs uppercase tracking-wider text-primary">Detalles Generales</h4>
+              <p><span class="text-slate-400 font-medium">Título:</span> <span id="sum-title" class="font-bold text-dark"></span></p>
+              <p><span class="text-slate-400 font-medium">Motivo:</span> <span id="sum-motivo" class="font-semibold"></span></p>
+              <p><span class="text-slate-400 font-medium">Ubicación:</span> <span id="sum-location" class="font-semibold"></span></p>
+              <p><span class="text-slate-400 font-medium">Fecha y Hora:</span> <span id="sum-datetime" class="font-semibold text-dark"></span></p>
+            </div>
+            <div class="space-y-3">
+              <h4 class="font-bold text-dark text-xs uppercase tracking-wider text-primary">Configuración</h4>
+              <p><span class="text-slate-400 font-medium">Boletos Totales:</span> <span id="sum-tickets" class="font-bold text-dark"></span></p>
+              <p><span class="text-slate-400 font-medium">Precio Unitario:</span> <span id="sum-price" class="font-bold text-emerald-600"></span></p>
+              <p><span class="text-slate-400 font-medium">Límite por Comprador:</span> <span id="sum-limit" class="font-semibold"></span></p>
+              <p><span class="text-slate-400 font-medium">Selección:</span> <span id="sum-mode" class="font-semibold capitalize"></span></p>
+              <p><span class="text-slate-400 font-medium">Descuento en compras:</span> <span id="sum-discount" class="font-bold text-blue-600"></span></p>
+              <p><span class="text-slate-400 font-medium">Costo de Creación:</span> <span id="sum-cost" class="font-bold text-dark"></span></p>
+            </div>
+            
+            <div class="md:col-span-2 space-y-2 border-t border-slate-200/60 pt-4">
+              <h4 class="font-bold text-dark text-xs uppercase tracking-wider text-primary">Lista de Premios</h4>
+              <ul class="divide-y divide-slate-200/60" id="sum-prizesList">
+                <!-- Prizes rows -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wizard Navigation Actions Button bar -->
+        <div class="flex justify-between items-center bg-white p-5 rounded-3xl border border-borderCustom shadow-sm">
+          <button type="button" id="prevBtn" onclick="navigateStep(-1)" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold transition-all text-sm invisible">
+            Atrás
+          </button>
+          
+          <div class="flex space-x-2">
+            <button type="button" id="nextBtn" onclick="navigateStep(1)" class="bg-primary hover:bg-primary-light text-white font-extrabold px-6 py-2.5 rounded-xl shadow-md transition-all text-sm">
+              Siguiente
+            </button>
+
+            <!-- Final Submission Options (Step 6 only) -->
+            <button type="button" id="saveDraftBtn" onclick="submitWizard(false)" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-6 py-2.5 rounded-xl transition-all text-sm">
+              Guardar Borrador
+            </button>
+            <button type="button" id="publishBtn" onclick="submitWizard(true)" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-2.5 rounded-xl shadow-md transition-all text-sm">
+              Confirmar y Publicar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalStepsCount = 6;
+
+  // 1. Wizard Step Navigation
+  function navigateStep(direction) {
+    if (direction === 1 && !validateCurrentStep()) {
+      return; // Stop if invalid input
+    }
+
+    // Hide current panel
+    document.getElementById('panel-' + currentStep).classList.add('hidden');
+    
+    // Update step pointer
+    currentStep += direction;
+
+    // Show new panel
+    document.getElementById('panel-' + currentStep).classList.remove('hidden');
+
+    // Handle Google Map display resize bug for hidden tabs/panels
+    if (currentStep === 2) {
+      if (typeof google !== 'undefined' && google.maps) {
+        if (!map) {
+          initMap();
+        } else {
+          google.maps.event.trigger(map, 'resize');
+          if (marker) {
+            map.setCenter(marker.getPosition());
+          }
+        }
+      }
+    }
+
+    // Update Indicators
+    updateStepIndicators();
+
+    // Scroll top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateStepIndicators() {
+    const indicators = document.querySelectorAll('.step-indicator');
+    indicators.forEach(ind => {
+      const step = parseInt(ind.getAttribute('data-step'));
+      const numSpan = ind.querySelector('.step-num');
+      
+      if (step === currentStep) {
+        ind.className = "step-indicator active-step flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl transition-all text-primary bg-primary/5";
+        numSpan.className = "step-num w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs";
+      } else if (step < currentStep) {
+        ind.className = "step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-emerald-600 transition-all";
+        numSpan.className = "step-num w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs";
+        numSpan.innerText = "✓";
+      } else {
+        ind.className = "step-indicator flex items-center space-x-3 text-sm font-bold p-2.5 rounded-xl text-slate-400 transition-all";
+        numSpan.className = "step-num w-7 h-7 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs";
+        numSpan.innerText = step;
+      }
+    });
+
+    // Control visibility of buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const saveDraftBtn = document.getElementById('saveDraftBtn');
+    const publishBtn = document.getElementById('publishBtn');
+
+    if (currentStep === 1) {
+      prevBtn.classList.add('invisible');
+    } else {
+      prevBtn.classList.remove('invisible');
+    }
+
+    if (currentStep === totalStepsCount) {
+      nextBtn.classList.add('hidden');
+      saveDraftBtn.classList.remove('hidden');
+      publishBtn.classList.remove('hidden');
+      updateConfirmationSummary();
+    } else {
+      nextBtn.classList.remove('hidden');
+      saveDraftBtn.classList.add('hidden');
+      publishBtn.classList.add('hidden');
+    }
+  }
+
+  // 2. Client Side Step Validation
+  function validateCurrentStep() {
+    const fieldsToValidate = {
+      1: ['in-title', 'in-motivo', 'in-description', 'in-drawDate', 'in-drawTime', 'in-timezone'],
+      2: ['in-country', 'in-province', 'in-city'],
+      3: ['in-totalTickets', 'in-ticketPrice', 'in-maxPerBuyer', 'in-ticketSelectionMode'],
+      5: ['in-image']
+    };
+
+    const ids = fieldsToValidate[currentStep] || [];
+    for (let id of ids) {
+      const field = document.getElementById(id);
+      if (field && !field.checkValidity()) {
+        field.reportValidity();
+        return false;
+      }
+    }
+
+    // Step 3 custom payment mode validation
+    if (currentStep === 3) {
+      const paymentMode = document.querySelector('input[name="paymentMode"]:checked')?.value;
+      if (paymentMode === 'manual') {
+        const transferBank = document.getElementById('in-transfer-bank');
+        const transferCbu = document.getElementById('in-transfer-cbu');
+        const transferAlias = document.getElementById('in-transfer-alias');
+        
+        if (!transferBank.value.trim()) {
+          alert('Por favor ingresa el Banco o Proveedor de cobro.');
+          transferBank.focus();
+          return false;
+        }
+        if (!transferCbu.value.trim()) {
+          alert('Por favor ingresa tu CBU/CVU para recibir transferencias.');
+          transferCbu.focus();
+          return false;
+        }
+        if (!transferAlias.value.trim()) {
+          alert('Por favor ingresa tu Alias.');
+          transferAlias.focus();
+          return false;
+        }
+      }
+    }
+
+    // Step 4 Awards validations
+    if (currentStep === 4) {
+      const names = document.querySelectorAll('input[name="premio_nombre"]');
+      if (names.length === 0) {
+        alert('Debe agregar al menos 1 premio para continuar.');
+        return false;
+      }
+      for (let input of names) {
+        if (!input.value.trim()) {
+          alert('Por favor complete el nombre de todos los premios.');
+          input.focus();
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  function togglePaymentFields() {
+    const paymentMode = document.querySelector('input[name="paymentMode"]:checked')?.value;
+    const manualFields = document.getElementById('manual-payment-fields');
+    const labelRifago = document.getElementById('label-pay-rifago');
+    const labelManual = document.getElementById('label-pay-manual');
+
+    if (paymentMode === 'manual') {
+      manualFields.classList.remove('hidden');
+      labelManual.classList.add('border-primary', 'bg-primary/5');
+      labelRifago.classList.remove('border-primary', 'bg-primary/5');
+      // Set required
+      document.getElementById('in-transfer-bank').required = true;
+      document.getElementById('in-transfer-cbu').required = true;
+      document.getElementById('in-transfer-alias').required = true;
+    } else {
+      manualFields.classList.add('hidden');
+      labelRifago.classList.add('border-primary', 'bg-primary/5');
+      labelManual.classList.remove('border-primary', 'bg-primary/5');
+      // Remove required
+      document.getElementById('in-transfer-bank').required = false;
+      document.getElementById('in-transfer-cbu').required = false;
+      document.getElementById('in-transfer-alias').required = false;
+    }
+  }
+
+  // 3. Dynamic Prizes Generation
+  function generatePrizeRows() {
+    const count = parseInt(document.getElementById('in-premioCount').value) || 1;
+    const container = document.getElementById('prizesContainer');
+    container.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      createPrizeCard(i);
+    }
+  }
+
+  function addPrizeRow() {
+    const container = document.getElementById('prizesContainer');
+    const index = container.children.length;
+    createPrizeCard(index);
+    // Sync Step 1 counter
+    document.getElementById('in-premioCount').value = index + 1;
+  }
+
+  function createPrizeCard(index) {
+    const container = document.getElementById('prizesContainer');
+    const suffix = index + 1;
+    const suffixLabel = suffix === 1 ? '1° Premio' : suffix === 2 ? '2° Premio' : suffix === 3 ? '3° Premio' : suffix + '° Premio';
+
+    const card = document.createElement('div');
+    card.className = "prize-card bg-slate-50 border border-slate-200/75 rounded-2xl p-5 space-y-4 relative animate-fade-in";
+    card.innerHTML = `
+      <div class="flex justify-between items-center">
+        <h4 class="font-extrabold text-primary text-sm">${suffixLabel}</h4>
+        <input type="hidden" name="premio_posicion" value="${suffixLabel}">
+        ${index > 0 ? `<button type="button" onclick="removePrizeRow(this)" class="text-red-500 hover:text-red-700 text-xs font-bold">🗑️ Eliminar</button>` : ''}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-slate-500 uppercase">Nombre del Premio *</label>
+          <input type="text" name="premio_nombre" required placeholder="Ej: PlayStation 5 Slim"
+                 class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold text-slate-500 uppercase">Valor Estimado (Opcional ARS)</label>
+          <input type="number" name="premio_valor" placeholder="Ej: 900000"
+                 class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+        <div class="md:col-span-2 space-y-1">
+          <label class="block text-[11px] font-bold text-slate-500 uppercase">Descripción corta del Premio</label>
+          <input type="text" name="premio_descripcion" placeholder="Ej: Consola de 1TB, incluye un joystick inalámbrico DualSense"
+                 class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+        <div class="md:col-span-2 space-y-2">
+          <label class="block text-[11px] font-bold text-slate-500 uppercase">Imagen del Premio</label>
+          <div class="flex items-center space-x-4">
+            <div class="w-16 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+              <img id="prizePreview_${index}" src="" alt="Premio" class="w-full h-full object-cover hidden">
+              <span id="prizePlaceholder_${index}" class="text-[9px] text-slate-400 text-center">No img</span>
+            </div>
+            <input type="file" name="premio_imagen_${index}" accept="image/*" onchange="previewImage(this, 'prizePreview_${index}', 'prizePlaceholder_${index}')"
+                   class="text-[10px] text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer">
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+
+  function removePrizeRow(btn) {
+    const card = btn.closest('.prize-card');
+    card.remove();
+    // Update step 1 counter
+    const container = document.getElementById('prizesContainer');
+    document.getElementById('in-premioCount').value = container.children.length;
+    // Re-index positions
+    reIndexPrizes();
+  }
+
+  function reIndexPrizes() {
+    const cards = document.querySelectorAll('.prize-card');
+    cards.forEach((card, idx) => {
+      const suffix = idx + 1;
+      const suffixLabel = suffix === 1 ? '1° Premio' : suffix === 2 ? '2° Premio' : suffix === 3 ? '3° Premio' : suffix + '° Premio';
+      card.querySelector('h4').innerText = suffixLabel;
+      card.querySelector('input[name="premio_posicion"]').value = suffixLabel;
+      
+      const fileInput = card.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.name = `premio_imagen_${idx}`;
+        const preview = card.querySelector('img');
+        const placeholder = card.querySelector('span');
+        
+        preview.id = `prizePreview_${idx}`;
+        placeholder.id = `prizePlaceholder_${idx}`;
+        
+        fileInput.setAttribute('onchange', `previewImage(this, 'prizePreview_${idx}', 'prizePlaceholder_${idx}')`);
+      }
+    });
+  }
+
+  // 4. File Upload Previews
+  function previewImage(input, previewId, placeholderId) {
+    const preview = document.getElementById(previewId);
+    const placeholder = document.getElementById(placeholderId);
+
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+      }
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      preview.src = '';
+      preview.classList.add('hidden');
+      if (placeholder) placeholder.classList.remove('hidden');
+    }
+  }
+
+  // 5. Gallery Drag and Drop & Multiple Preview
+  let galleryFilesList = [];
+
+  function handleGallerySelect(input) {
+    const container = document.getElementById('galleryPreviewContainer');
+    
+    // Convert FileList to array
+    const files = Array.from(input.files);
+    
+    files.forEach(file => {
+      if (galleryFilesList.length >= 10) return; // Max 10 files
+      galleryFilesList.push(file);
+
+      // Create preview node
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const div = document.createElement('div');
+        div.className = "relative group w-full h-20 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shadow-sm";
+        div.innerHTML = `
+          <img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover">
+          <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity font-bold" onclick="removeGalleryItem(this, '${file.name}')">
+            &times;
+          </button>
+        `;
+        container.appendChild(div);
+      }
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeGalleryItem(btn, fileName) {
+    const div = btn.closest('.relative');
+    div.remove();
+    // Filter from file list
+    galleryFilesList = galleryFilesList.filter(f => f.name !== fileName);
+  }
+
+  // 6. Step 6 Summary Compilation
+  function updateConfirmationSummary() {
+    // Read input fields
+    document.getElementById('sum-title').innerText = document.getElementById('in-title').value;
+    document.getElementById('sum-motivo').innerText = document.getElementById('in-motivo').value;
+    document.getElementById('sum-location').innerText = 
+      document.getElementById('in-city').value + ', ' + 
+      document.getElementById('in-province').value + ', ' + 
+      document.getElementById('in-country').value;
+    
+    document.getElementById('sum-datetime').innerText = 
+      document.getElementById('in-drawDate').value + ' ' + 
+      document.getElementById('in-drawTime').value + ' (' + 
+      document.getElementById('in-timezone').value + ')';
+    
+    document.getElementById('sum-tickets').innerText = document.getElementById('in-totalTickets').value + ' números';
+    document.getElementById('sum-price').innerText = '$' + document.getElementById('in-ticketPrice').value + ' ARS';
+    document.getElementById('sum-limit').innerText = document.getElementById('in-maxPerBuyer').value + ' números máx';
+    document.getElementById('sum-mode').innerText = document.getElementById('in-ticketSelectionMode').value === 'auto' ? 'Asignación Automática' : 'Manual (Grilla)';
+    document.getElementById('sum-discount').innerText = activeCoupon 
+      ? activeCoupon.code + ' (' + (activeCoupon.type === 'percentage' ? activeCoupon.value + '%' : '$' + activeCoupon.value + ' ARS') + ')' 
+      : 'Ninguno';
+    document.getElementById('sum-cost').innerText = document.getElementById('planPrice').innerText;
+
+    // List of prizes
+    const list = document.getElementById('sum-prizesList');
+    list.innerHTML = '';
+    const prizeNames = document.querySelectorAll('input[name="premio_nombre"]');
+    const prizePositions = document.querySelectorAll('input[name="premio_posicion"]');
+    const prizeValues = document.querySelectorAll('input[name="premio_valor"]');
+
+    prizeNames.forEach((input, idx) => {
+      const position = prizePositions[idx]?.value || (idx + 1) + '° Premio';
+      const name = input.value || 'Sin nombre';
+      const value = prizeValues[idx]?.value ? ' ($' + prizeValues[idx].value + ' ARS)' : '';
+
+      const li = document.createElement('li');
+      li.className = "py-2.5 flex justify-between items-center text-xs";
+      li.innerHTML = `
+        <span class="font-bold text-dark"><span class="text-primary font-black">${position}:</span> ${name}</span>
+        <span class="text-slate-400 font-semibold">${value}</span>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  // 7. Submit Helper
+  function submitWizard(publishNow) {
+    document.getElementById('publishImmediately').value = publishNow ? "true" : "false";
+    document.getElementById('raffleForm').submit();
+  }
+
+  // 8. Google Maps Integration
+  let map, marker, autocomplete;
+  
+  function logDebug(msg) {
+    console.log("[GoogleMaps Debug]", msg);
+    const dbg = document.getElementById('mapsDebug');
+    if (dbg) {
+      dbg.innerText = msg;
+      dbg.classList.remove('hidden');
+    }
+  }
+
+  function initMap() {
+    logDebug("Iniciando mapa...");
+    const defaultCoords = { lat: -34.6037, lng: -58.3816 }; // Buenos Aires
+    const mapElement = document.getElementById('map');
+    
+    if (!mapElement) {
+      logDebug("Error: Elemento #map no encontrado.");
+      return;
+    }
+
+    try {
+      map = new google.maps.Map(mapElement, {
+        center: defaultCoords,
+        zoom: 12,
+        disableDefaultUI: false,
+        zoomControl: true
+      });
+
+      marker = new google.maps.Marker({
+        position: defaultCoords,
+        map: map,
+        draggable: true
+      });
+
+      logDebug("Mapa y marcador creados correctamente.");
+    } catch (e) {
+      logDebug("Error al inicializar Google Map: " + e.message);
+      return;
+    }
+
+    const input = document.getElementById('mapSearchInput');
+    if (!input) return;
+
+    try {
+      autocomplete = new google.maps.places.Autocomplete(input, {
+        fields: ['address_components', 'formatted_address', 'geometry']
+      });
+      autocomplete.bindTo('bounds', map);
+      logDebug("Autocomplete de lugares enlazado.");
+    } catch (e) {
+      logDebug("Error al inicializar Autocomplete: " + e.message);
+    }
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      logDebug("Lugar seleccionado: " + (place.formatted_address || "Sin dirección con formato") + 
+               "\nComponentes: " + (place.address_components ? place.address_components.length : "Ninguno"));
+      
+      if (!place.geometry || !place.geometry.location) {
+        logDebug("Advertencia: El lugar seleccionado no tiene coordenadas geométricas.");
+        return;
+      }
+
+      if (place.geometry.viewport) {
+        map.fitBounds(place.geometry.viewport);
+      } else {
+        map.setCenter(place.geometry.location);
+        map.setZoom(17);
+      }
+
+      if (place.geometry && place.geometry.location) {
+        document.getElementById('in-latitude').value = place.geometry.location.lat();
+        document.getElementById('in-longitude').value = place.geometry.location.lng();
+      }
+
+      marker.setPosition(place.geometry.location);
+      fillAddressFields(place.address_components, place.formatted_address);
+    });
+
+    marker.addListener('dragend', () => {
+      const latLng = marker.getPosition();
+      logDebug("Marcador arrastrado a: " + latLng.toString() + "\nRealizando geocodificación inversa...");
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: latLng }, (results, status) => {
+        logDebug("Resultado de geocodificación inversa: " + status + 
+                 "\nDirecciones encontradas: " + (results ? results.length : 0));
+        
+        if (status === 'OK' && results[0]) {
+          input.value = results[0].formatted_address;
+          document.getElementById('in-latitude').value = latLng.lat();
+          document.getElementById('in-longitude').value = latLng.lng();
+          fillAddressFields(results[0].address_components, results[0].formatted_address);
+        }
+      });
+    });
+
+    // Add map click listener to place marker and reverse-geocode
+    map.addListener('click', (e) => {
+      const latLng = e.latLng;
+      logDebug("Mapa clickeado en: " + latLng.toString() + "\nRealizando geocodificación inversa...");
+      marker.setPosition(latLng);
+      map.panTo(latLng);
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: latLng }, (results, status) => {
+        logDebug("Resultado de geocodificación por click: " + status + 
+                 "\nDirecciones encontradas: " + (results ? results.length : 0));
+        if (status === 'OK' && results[0]) {
+          input.value = results[0].formatted_address;
+          document.getElementById('in-latitude').value = latLng.lat();
+          document.getElementById('in-longitude').value = latLng.lng();
+          fillAddressFields(results[0].address_components, results[0].formatted_address);
+        }
+      });
+    });
+
+    // Prevent enter key from submitting the wizard form on autocomplete search
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+      }
+    });
+  }
+
+  function fillAddressFields(components, formattedAddress) {
+    logDebug("Llenando campos con componentes:\n" + JSON.stringify(components) + "\nY dirección: " + formattedAddress);
+    
+    // Clear fields first
+    document.getElementById('in-country').value = '';
+    document.getElementById('in-province').value = '';
+    document.getElementById('in-city').value = '';
+    document.getElementById('in-address').value = '';
+
+    if (components && Array.isArray(components)) {
+      let streetName = '';
+      let streetNum = '';
+
+      for (const component of components) {
+        const types = component.types;
+        if (types.includes('country')) {
+          document.getElementById('in-country').value = component.long_name;
+        } else if (types.includes('administrative_area_level_1')) {
+          document.getElementById('in-province').value = component.long_name;
+        } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+          if (!document.getElementById('in-city').value || types.includes('locality')) {
+            document.getElementById('in-city').value = component.long_name;
+          }
+        } else if (types.includes('route')) {
+          streetName = component.long_name;
+        } else if (types.includes('street_number')) {
+          streetNum = component.long_name;
+        }
+      }
+
+      if (streetName) {
+        document.getElementById('in-address').value = streetName + (streetNum ? ' ' + streetNum : '');
+      }
+    }
+
+    // Fallback: If some fields are still empty, try to parse from formattedAddress
+    if (formattedAddress) {
+      const parts = formattedAddress.split(',').map(p => p.trim());
+      if (parts.length >= 3) {
+        if (!document.getElementById('in-country').value) {
+          document.getElementById('in-country').value = parts[parts.length - 1] || '';
+        }
+        if (!document.getElementById('in-province').value) {
+          document.getElementById('in-province').value = parts[parts.length - 2] || '';
+        }
+        if (!document.getElementById('in-city').value) {
+          document.getElementById('in-city').value = parts[parts.length - 3] || '';
+        }
+        if (!document.getElementById('in-address').value) {
+          document.getElementById('in-address').value = parts[0] || '';
+        }
+      }
+    }
+  }
+
+  // 9. Adjust ticket numbers and pricing plans
+  let activeCoupon = null;
+
+  async function applyCoupon() {
+    const codeInput = document.getElementById('in-couponCode');
+    const msg = document.getElementById('couponMsg');
+    if (!codeInput || !msg) return;
+    
+    const code = codeInput.value.trim().toUpperCase();
+    if (!code) {
+      msg.innerText = 'Por favor ingresa un código de descuento.';
+      msg.className = 'text-red-500 text-xs mt-1 font-semibold';
+      msg.classList.remove('hidden');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/raffles/validate-coupon?code=${code}`);
+      const data = await response.json();
+      
+      if (data.valid) {
+        activeCoupon = {
+          code: code,
+          type: data.discountType,
+          value: data.discountValue
+        };
+        msg.innerText = `¡Cupón aplicado! Descuento de ${data.discountType === 'percentage' ? data.discountValue + '%' : '$' + data.discountValue + ' ARS'}`;
+        msg.className = 'text-emerald-600 text-xs mt-1 font-semibold';
+        msg.classList.remove('hidden');
+      } else {
+        activeCoupon = null;
+        msg.innerText = data.message || 'Código de descuento inválido o vencido.';
+        msg.className = 'text-red-500 text-xs mt-1 font-semibold';
+        msg.classList.remove('hidden');
+      }
+      
+      updatePlanPrice();
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      msg.innerText = 'Error de conexión al aplicar el cupón.';
+      msg.className = 'text-red-500 text-xs mt-1 font-semibold';
+      msg.classList.remove('hidden');
+    }
+  }
+
+  function adjustTickets(amount) {
+    const input = document.getElementById('in-totalTickets');
+    if (!input) return;
+    
+    let val = parseInt(input.value) || 100;
+    val += amount;
+    
+    // Clamp between 50 and 1000
+    if (val < 50) val = 50;
+    if (val > 1000) val = 1000;
+    
+    input.value = val;
+    updatePlanPrice();
+  }
+
+  function updatePlanPrice() {
+    const input = document.getElementById('in-totalTickets');
+    const badge = document.getElementById('planBadge');
+    const priceText = document.getElementById('planPrice');
+    const hiddenCostInput = document.getElementById('in-creationCost');
+    if (!input || !badge || !priceText) return;
+    
+    const val = parseInt(input.value) || 100;
+    const baseCost = Math.ceil(val / 50) * 1500;
+    let finalCost = baseCost;
+    
+    if (activeCoupon) {
+      if (activeCoupon.type === 'percentage') {
+        finalCost = baseCost * (1 - (activeCoupon.value / 100));
+      } else if (activeCoupon.type === 'fixed') {
+        finalCost = baseCost - activeCoupon.value;
+      }
+      if (finalCost < 0) finalCost = 0;
+    }
+    
+    if (hiddenCostInput) {
+      hiddenCostInput.value = finalCost;
+    }
+    
+    badge.innerText = activeCoupon ? 'Cupón Activo' : 'Lineal';
+    
+    if (activeCoupon) {
+      priceText.innerHTML = `<span class="line-through text-slate-400 mr-1 text-xs">$${baseCost.toLocaleString('es-AR')}</span> $${finalCost.toLocaleString('es-AR')} ARS`;
+    } else {
+      priceText.innerText = '$' + baseCost.toLocaleString('es-AR') + ' ARS';
+    }
+  }
+
+  // Initialize
+  generatePrizeRows();
+  updatePlanPrice();
+  togglePaymentFields();
+</script>
+
+<% if (typeof googleMapsApiKey !== 'undefined' && googleMapsApiKey) { %>
+  <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleMapsApiKey %>&libraries=places&callback=initMap" async defer></script>
+<% } %>

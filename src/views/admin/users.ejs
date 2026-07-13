@@ -1,0 +1,403 @@
+<div class="space-y-8">
+  <!-- Header / Breadcrumbs -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-dark">Gestión de Usuarios</h1>
+      <p class="text-slate-500 text-sm mt-1">Supervisa las cuentas de los usuarios, filtra registros y aprueba solicitudes de verificación.</p>
+    </div>
+    <div>
+      <a href="/admin/dashboard" class="text-sm font-bold text-primary hover:text-primary-light flex items-center space-x-1.5 transition-colors">
+        <span>← Volver al Dashboard</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Indicator Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Registrados</span>
+        <h3 class="text-3xl font-black text-dark"><%= stats.totalUsers %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center text-xl">👥</div>
+    </div>
+    
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Usuarios Verificados</span>
+        <h3 class="text-3xl font-black text-dark text-emerald-600"><%= stats.verifiedUsers %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">🛡️</div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pendientes de Aprobación</span>
+        <h3 class="text-3xl font-black text-dark text-yellow-600"><%= stats.pendingUsers %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center text-xl">⏳</div>
+    </div>
+  </div>
+
+  <!-- Separate List for Pending Verifications -->
+  <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-6 space-y-6">
+    <div class="border-b border-slate-100 pb-4">
+      <h2 class="text-xl font-extrabold text-dark flex items-center space-x-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span>
+        <span>Solicitudes de Verificación Pendientes</span>
+      </h2>
+      <p class="text-xs text-slate-400 mt-1">Usuarios que han subido su documento y esperan aprobación para poder realizar y participar en sorteos.</p>
+    </div>
+
+    <% 
+      const pendingList = users.filter(u => u.documentPhoto && !u.isVerified);
+    %>
+
+    <% if (pendingList.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% pendingList.forEach(u => { %>
+          <div class="bg-slate-50 rounded-2xl border border-borderCustom p-5 flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow animate-fade-in">
+            <div class="flex items-start space-x-3">
+              <% if (u.profilePhoto) { %>
+                <img src="<%= u.profilePhoto %>" alt="Avatar" class="w-11 h-11 rounded-full object-cover">
+              <% } else { %>
+                <div class="w-11 h-11 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center uppercase text-lg">
+                  <%= u.name.charAt(0) %>
+                </div>
+              <% } %>
+              <div class="space-y-0.5 animate-fade-in">
+                <h4 class="font-bold text-dark text-sm"><%= u.name %></h4>
+                <p class="text-xs text-slate-500 truncate max-w-[180px]"><%= u.email %></p>
+                <p class="text-[11px] text-slate-400">Tel: <%= u.phone || 'No registrado' %></p>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+              <button type="button" class="text-xs font-bold text-primary hover:text-primary-light transition-colors underline cursor-pointer"
+                      onclick="openDocModal('<%= u.name %>', '<%= u.documentPhoto %>', '<%= u._id %>', <%= u.isVerified %>)">
+                Revisar Documento
+              </button>
+
+              <form action="/admin/users/<%= u._id %>/verify" method="POST" class="inline">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg shadow-sm hover:shadow-emerald-600/10 transition-all">
+                  Aprobar
+                </button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-6 text-center text-emerald-800 flex flex-col items-center justify-center space-y-2">
+        <span class="text-2xl">🎉</span>
+        <h4 class="font-bold text-sm">¡Todo al día!</h4>
+        <p class="text-xs text-emerald-600 max-w-sm">No hay solicitudes de verificación pendientes de revisión en este momento.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Users Table Card with Filters & Search -->
+  <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-6 space-y-6 overflow-hidden">
+    
+    <!-- Filter Tabs & Search Bar -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+      <!-- Filter Tabs -->
+      <div class="flex flex-wrap gap-2" id="filterContainer">
+        <button onclick="changeStatusFilter('all')" id="btn-all" class="filter-btn px-4 py-2.5 text-xs font-bold rounded-xl transition-all bg-primary text-white shadow-sm">
+          Todos (<%= stats.totalUsers %>)
+        </button>
+        <button onclick="changeStatusFilter('verified')" id="btn-verified" class="filter-btn px-4 py-2.5 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
+          Verificados (<%= stats.verifiedUsers %>)
+        </button>
+        <button onclick="changeStatusFilter('pending')" id="btn-pending" class="filter-btn px-4 py-2.5 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
+          Pendientes (<%= stats.pendingUsers %>)
+        </button>
+        <button onclick="changeStatusFilter('nodoc')" id="btn-nodoc" class="filter-btn px-4 py-2.5 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 hover:bg-slate-200">
+          Sin Documento (<%= stats.totalUsers - stats.verifiedUsers - stats.pendingUsers %>)
+        </button>
+      </div>
+      
+      <!-- Search Input -->
+      <div class="relative w-full lg:w-80">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+        <input type="text" id="tableSearch" onkeyup="applyFilters()" placeholder="Buscar por nombre, email o tel..."
+               class="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-xs text-slate-400 font-medium">
+      <p id="filterStatusText">Mostrando todos los usuarios</p>
+      <p id="resultsCountText">Encontrados: <%= stats.totalUsers %></p>
+    </div>
+
+    <!-- Table Container -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse" id="usersTable">
+        <thead>
+          <tr class="border-b border-borderCustom text-slate-400 text-xs font-bold uppercase tracking-wider">
+            <th class="pb-3 font-semibold">Usuario</th>
+            <th class="pb-3 font-semibold">Email</th>
+            <th class="pb-3 font-semibold">Teléfono</th>
+            <th class="pb-3 font-semibold">Edad</th>
+            <th class="pb-3 font-semibold">Rol</th>
+            <th class="pb-3 font-semibold">Verificación</th>
+            <th class="pb-3 font-semibold">Identificación</th>
+            <th class="pb-3 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm">
+          <% if (users.length > 0) { %>
+            <% users.forEach(u => { 
+              const statusClass = u.isVerified ? 'verified' : (u.documentPhoto ? 'pending' : 'nodoc');
+            %>
+              <tr class="hover:bg-slate-50/50 transition-colors user-row animate-fade-in" data-status="<%= statusClass %>">
+                <!-- User profile photo & name -->
+                <td class="py-4">
+                  <div class="flex items-center space-x-3">
+                    <% if (u.profilePhoto) { %>
+                      <img src="<%= u.profilePhoto %>" alt="Avatar" class="w-9 h-9 rounded-full object-cover">
+                    <% } else { %>
+                      <div class="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center uppercase">
+                        <%= u.name.charAt(0) %>
+                      </div>
+                    <% } %>
+                    <span class="font-bold text-dark user-name"><%= u.name %></span>
+                  </div>
+                </td>
+
+                <td class="py-4 text-slate-500 user-email"><%= u.email %></td>
+                
+                <td class="py-4 text-slate-500 user-phone"><%= u.phone || '—' %></td>
+                
+                <td class="py-4 text-slate-500"><%= u.age || '—' %></td>
+                
+                <td class="py-4">
+                  <span class="capitalize px-2.5 py-1 rounded-lg text-xs font-bold tracking-wider <%= u.role === 'admin' ? 'bg-secondary/15 text-dark border border-secondary/35' : 'bg-slate-100 text-slate-600' %>">
+                    <%= u.role %>
+                  </span>
+                </td>
+
+                <!-- Verification badge -->
+                <td class="py-4">
+                  <% if (u.isVerified) { %>
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">Verificado</span>
+                  <% } else if (u.documentPhoto) { %>
+                    <span class="bg-yellow-50 text-yellow-700 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">Pendiente</span>
+                  <% } else { %>
+                    <span class="bg-slate-100 text-slate-400 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Sin Doc</span>
+                  <% } %>
+                </td>
+
+                <!-- Document link -->
+                <td class="py-4">
+                  <% if (u.documentPhoto) { %>
+                    <button type="button" class="text-xs font-bold text-primary hover:text-primary-light transition-colors underline cursor-pointer"
+                            onclick="openDocModal('<%= u.name %>', '<%= u.documentPhoto %>', '<%= u._id %>', <%= u.isVerified %>)">
+                      Ver Documento
+                    </button>
+                  <% } else { %>
+                    <span class="text-slate-400 text-xs">No subido</span>
+                  <% } %>
+                </td>
+
+                <!-- Action forms -->
+                <td class="py-4 text-right">
+                  <% if (u.role !== 'admin') { %>
+                    <% if (!u.isVerified && u.documentPhoto) { %>
+                      <form action="/admin/users/<%= u._id %>/verify" method="POST" class="inline">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm hover:shadow-emerald-600/20 transition-all">
+                          Aprobar
+                        </button>
+                      </form>
+                    <% } else if (u.isVerified) { %>
+                      <form action="/admin/users/<%= u._id %>/unverify" method="POST" class="inline">
+                        <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-red-200/50 transition-colors">
+                          Revocar
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-slate-400 text-xs">—</span>
+                    <% } %>
+                  <% } else { %>
+                    <span class="text-slate-400 text-xs font-semibold">Super Admin</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr id="emptyRow">
+              <td colspan="8" class="py-12 text-center text-slate-400">
+                No hay usuarios registrados actualmente.
+              </td>
+            </tr>
+          <% } %>
+          <tr id="noResultsRow" class="hidden">
+            <td colspan="8" class="py-12 text-center text-slate-400">
+              Ningún usuario coincide con la búsqueda o el filtro seleccionado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dialog for Document View -->
+<div id="docModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl max-w-2xl w-full border border-borderCustom shadow-2xl overflow-hidden flex flex-col animate-fade-in">
+    <!-- Modal Header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+      <div>
+        <h3 class="text-lg font-bold text-dark">Documento de Identidad</h3>
+        <p class="text-xs text-slate-500" id="modalUserName"></p>
+      </div>
+      <button onclick="closeDocModal()" class="text-slate-400 hover:text-dark font-bold text-2xl focus:outline-none">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 flex-1 flex items-center justify-center bg-slate-100/50">
+      <img id="modalDocImg" src="" alt="Documento" class="max-h-[60vh] max-w-full rounded-xl shadow-md object-contain border border-slate-200">
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="px-6 py-4 border-t border-slate-100 flex justify-end space-x-3 bg-slate-50" id="modalFooterActions">
+      <button onclick="closeDocModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-100 transition-colors text-sm">
+        Cerrar
+      </button>
+      
+      <form id="modalApproveForm" action="" method="POST" class="hidden">
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-emerald-600/20 transition-all text-sm">
+          Aprobar Verificación
+        </button>
+      </form>
+
+      <form id="modalRevokeForm" action="" method="POST" class="hidden">
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-red-600/20 transition-all text-sm">
+          Revocar Verificación
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Active states for filtering
+  let activeStatus = 'all';
+
+  // 1. Modal Toggle Handlers
+  function openDocModal(userName, docPhotoUrl, userId, isVerified) {
+    document.getElementById('modalUserName').innerText = 'Usuario: ' + userName;
+    document.getElementById('modalDocImg').src = docPhotoUrl;
+    
+    const approveForm = document.getElementById('modalApproveForm');
+    const revokeForm = document.getElementById('modalRevokeForm');
+    
+    if (isVerified) {
+      approveForm.classList.add('hidden');
+      revokeForm.action = '/admin/users/' + userId + '/unverify';
+      revokeForm.classList.remove('hidden');
+    } else {
+      revokeForm.classList.add('hidden');
+      approveForm.action = '/admin/users/' + userId + '/verify';
+      approveForm.classList.remove('hidden');
+    }
+    
+    document.getElementById('docModal').classList.remove('hidden');
+  }
+
+  function closeDocModal() {
+    document.getElementById('docModal').classList.add('hidden');
+  }
+
+  window.addEventListener('click', (e) => {
+    const modal = document.getElementById('docModal');
+    if (e.target === modal) {
+      closeDocModal();
+    }
+  });
+
+  // 2. Change Status Filter trigger
+  function changeStatusFilter(status) {
+    activeStatus = status;
+    
+    // Update active class on filter buttons
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(btn => {
+      btn.className = 'filter-btn px-4 py-2.5 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 hover:bg-slate-200';
+    });
+
+    const activeBtn = document.getElementById('btn-' + status);
+    if (activeBtn) {
+      activeBtn.className = 'filter-btn px-4 py-2.5 text-xs font-bold rounded-xl transition-all bg-primary text-white shadow-sm';
+    }
+
+    // Update status text description
+    const filterStatusText = document.getElementById('filterStatusText');
+    switch(status) {
+      case 'all':
+        filterStatusText.innerText = 'Mostrando todos los usuarios';
+        break;
+      case 'verified':
+        filterStatusText.innerText = 'Mostrando usuarios con cuenta verificada';
+        break;
+      case 'pending':
+        filterStatusText.innerText = 'Mostrando usuarios pendientes de verificar';
+        break;
+      case 'nodoc':
+        filterStatusText.innerText = 'Mostrando usuarios sin documento de identidad subido';
+        break;
+    }
+
+    applyFilters();
+  }
+
+  // 3. Combined Filtering & Text Search Engine
+  function applyFilters() {
+    const searchInput = document.getElementById('tableSearch');
+    const query = searchInput.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.user-row');
+    const noResultsRow = document.getElementById('noResultsRow');
+    const resultsCountText = document.getElementById('resultsCountText');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const status = row.getAttribute('data-status');
+      
+      // Extract text content for query check
+      const nameNode = row.querySelector('.user-name');
+      const emailNode = row.querySelector('.user-email');
+      const phoneNode = row.querySelector('.user-phone');
+      
+      const nameText = nameNode ? nameNode.innerText.toLowerCase() : '';
+      const emailText = emailNode ? emailNode.innerText.toLowerCase() : '';
+      const phoneText = phoneNode ? phoneNode.innerText.toLowerCase() : '';
+
+      const matchesStatus = (activeStatus === 'all' || status === activeStatus);
+      const matchesSearch = (
+        query === '' || 
+        nameText.includes(query) || 
+        emailText.includes(query) || 
+        phoneText.includes(query)
+      );
+
+      if (matchesStatus && matchesSearch) {
+        row.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+
+    // Update count text
+    resultsCountText.innerText = 'Encontrados: ' + visibleCount;
+
+    // Toggle Empty state row
+    if (rows.length > 0) {
+      if (visibleCount === 0) {
+        noResultsRow.classList.remove('hidden');
+      } else {
+        noResultsRow.classList.add('hidden');
+      }
+    }
+  }
+</script>

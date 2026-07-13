@@ -1,0 +1,173 @@
+<div class="max-w-2xl mx-auto my-12 px-4">
+  <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary to-primary-light p-8 text-white text-center relative">
+      <div class="absolute top-4 left-4 bg-white/20 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+        Transferencia Directa
+      </div>
+      <span class="text-5xl">🏦</span>
+      <h1 class="text-2xl font-black mt-4">Instrucciones de Pago</h1>
+      <p class="text-xs opacity-90 mt-1">Completa tu transferencia para asegurar tus números.</p>
+    </div>
+
+    <div class="p-8 space-y-8">
+      <!-- Status Alert -->
+      <% if (purchase.status === 'pending') { %>
+        <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl flex items-start space-x-3 text-xs font-semibold">
+          <span class="text-lg">⏳</span>
+          <div>
+            <p class="font-extrabold uppercase text-[10px] tracking-wider">Reserva Temporal Activa</p>
+            <p class="mt-0.5 text-slate-600 font-medium">Tus números están reservados por 5 minutos. Si no subes el comprobante en este tiempo, la reserva expirará y se liberarán automáticamente.</p>
+          </div>
+        </div>
+      <% } else if (purchase.status === 'pending_payment') { %>
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-2xl flex items-start space-x-3 text-xs font-semibold">
+          <span class="text-lg">🗂️</span>
+          <div>
+            <p class="font-extrabold uppercase text-[10px] tracking-wider">Comprobante Enviado</p>
+            <p class="mt-0.5 text-slate-600 font-medium">Hemos recibido tu comprobante. El organizador del sorteo está verificando la transferencia para confirmar tus números. Recibirás un aviso en tiempo real cuando se confirme.</p>
+          </div>
+        </div>
+      <% } else if (purchase.status === 'completed') { %>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl flex items-start space-x-3 text-xs font-semibold">
+          <span class="text-lg">✅</span>
+          <div>
+            <p class="font-extrabold uppercase text-[10px] tracking-wider">Pago Confirmado</p>
+            <p class="mt-0.5 text-slate-600 font-medium">El organizador ya confirmó el pago. ¡Tus números ya te pertenecen oficialmente!</p>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Purchase Summary -->
+      <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex justify-between items-center text-sm">
+        <div>
+          <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider block">Sorteo</span>
+          <span class="font-black text-dark"><%= raffle.title %></span>
+        </div>
+        <div class="text-right">
+          <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider block">Monto a Transferir</span>
+          <span class="font-black text-emerald-600 text-lg">$<%= purchase.amount.toLocaleString('es-AR') %></span>
+        </div>
+      </div>
+
+      <!-- Ticket Numbers Grid -->
+      <div class="space-y-2">
+        <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider block">Tus Números Reservados</span>
+        <div class="flex flex-wrap gap-2">
+          <% purchase.numbers.forEach(num => { %>
+            <span class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-dark text-xs shadow-sm">
+              #<%= num %>
+            </span>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Bank Transfer Details -->
+      <div class="space-y-4">
+        <h3 class="font-black text-dark text-sm border-b border-slate-100 pb-2">Datos de la Cuenta Destino</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-slate-600">
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1">
+            <span class="text-slate-400 font-extrabold uppercase text-[9px] block">Banco / Billetera</span>
+            <span class="font-black text-dark text-sm"><%= raffle.transferInfo.bankName || 'No especificado' %></span>
+          </div>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1 relative">
+            <span class="text-slate-400 font-extrabold uppercase text-[9px] block">CBU / CVU</span>
+            <span class="font-black text-dark text-sm break-all" id="cbu-val"><%= raffle.transferInfo.cbu || 'No especificado' %></span>
+            <button onclick="copyToClipboard('<%= raffle.transferInfo.cbu %>', 'CBU')" class="absolute top-2 right-2 text-slate-400 hover:text-primary font-bold text-[10px]">📋 Copiar</button>
+          </div>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1 relative md:col-span-2">
+            <span class="text-slate-400 font-extrabold uppercase text-[9px] block">Alias</span>
+            <span class="font-black text-dark text-sm" id="alias-val"><%= raffle.transferInfo.alias || 'No especificado' %></span>
+            <button onclick="copyToClipboard('<%= raffle.transferInfo.alias %>', 'Alias')" class="absolute top-2 right-2 text-slate-400 hover:text-primary font-bold text-[10px]">📋 Copiar</button>
+          </div>
+        </div>
+
+        <% if (raffle.transferInfo.instructions) { %>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs space-y-1">
+            <span class="text-slate-400 font-extrabold uppercase text-[9px] block">Instrucciones Adicionales</span>
+            <p class="text-slate-600 font-semibold italic"><%= raffle.transferInfo.instructions %></p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Upload Form -->
+      <% if (purchase.status === 'pending') { %>
+        <form action="/purchases/upload-proof/<%= purchase._id %>" method="POST" enctype="multipart/form-data" class="space-y-4 border-t border-slate-100 pt-6">
+          <h3 class="font-black text-dark text-sm">Sube tu Comprobante de Pago</h3>
+          <p class="text-xs text-slate-500">Por favor adjunta una captura o foto legible del comprobante para que el organizador confirme tu participación.</p>
+          
+          <div class="flex items-center space-x-4">
+            <div class="w-20 h-16 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+              <img id="proofPreview" src="" alt="Comprobante" class="w-full h-full object-cover hidden">
+              <span id="proofPlaceholder" class="text-[10px] text-slate-400 text-center font-bold">Sin archivo</span>
+            </div>
+            <input type="file" name="transferProof" id="in-proof" accept="image/*" required onchange="previewReceipt(this)"
+                   class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer">
+          </div>
+
+          <button type="submit" class="w-full bg-primary hover:bg-primary-light text-white font-extrabold py-3.5 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider">
+            Enviar Comprobante
+          </button>
+        </form>
+      <% } else if (purchase.transferProof) { %>
+        <div class="space-y-2 border-t border-slate-100 pt-6">
+          <span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider block">Comprobante Enviado</span>
+          <div class="w-48 h-32 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden shadow-sm relative group">
+            <img src="<%= purchase.transferProof %>" alt="Comprobante enviado" class="w-full h-full object-cover">
+            <a href="<%= purchase.transferProof %>" target="_blank" class="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+              🔎 Ver Pantalla Completa
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="flex justify-between items-center border-t border-slate-100 pt-6">
+        <a href="/raffles/<%= raffle.slug %>" class="text-xs font-bold text-slate-500 hover:text-dark">
+          ← Volver al Sorteo
+        </a>
+        <a href="/raffles/myraffles" class="text-xs font-bold text-primary hover:underline">
+          Ir a Mis Compras
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewReceipt(input) {
+    const preview = document.getElementById('proofPreview');
+    const placeholder = document.getElementById('proofPlaceholder');
+
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      }
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      preview.src = '';
+      preview.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+    }
+  }
+
+  function copyToClipboard(text, label) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert(label + ' copiado al portapapeles.');
+    }).catch(err => {
+      console.error('Error al copiar:', err);
+    });
+  }
+
+  // Socket update logic for real-time confirmation on this page
+  const socket = io();
+  socket.emit('raffle:join', '<%= raffle._id %>');
+
+  socket.on('purchase:confirmed_manual', ({ purchaseId, numbers }) => {
+    if (purchaseId === '<%= purchase._id %>') {
+      window.location.reload();
+    }
+  });
+</script>
