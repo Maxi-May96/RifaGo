@@ -56,9 +56,28 @@ app.use('/raffles', raffleRoutes);
 app.use('/purchases', purchaseRoutes);
 app.use('/payments', paymentRoutes);
 
+import Raffle from './models/Raffle.js';
+
 // Basic Routes
-app.get('/', (req, res) => {
-  res.render('home/index', { title: 'Inicio - RifaGo' });
+app.get('/', async (req, res) => {
+  try {
+    // Fetch active raffles sorted by closest draw date
+    const activeRaffles = await Raffle.find({ status: 'activo' })
+      .populate('category', 'name')
+      .sort({ drawDate: 1 })
+      .limit(6);
+
+    res.render('home/index', { 
+      title: 'Inicio - RifaGo',
+      activeRaffles 
+    });
+  } catch (error) {
+    console.error('Error fetching home active raffles:', error);
+    res.render('home/index', { 
+      title: 'Inicio - RifaGo', 
+      activeRaffles: [] 
+    });
+  }
 });
 
 // 404 handler
