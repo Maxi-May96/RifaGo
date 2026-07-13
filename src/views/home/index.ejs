@@ -46,16 +46,15 @@
     <div class="lg:col-span-5 flex justify-center">
       <div class="relative w-full max-w-md p-6 bg-white rounded-[2.5rem] border border-borderCustom shadow-2xl transform hover:rotate-2 transition-transform duration-500">
         <!-- Badge -->
-        <div class="absolute top-4 right-4 bg-secondary text-dark font-black px-4 py-1.5 rounded-full text-xs tracking-wider uppercase shadow-md animate-bounce">
+        <div class="absolute top-4 right-4 bg-secondary text-dark font-black px-4 py-1.5 rounded-full text-xs tracking-wider uppercase shadow-md z-10 animate-bounce">
           ¡Destacado!
         </div>
-        <!-- Card Image Placeholder/Styling -->
-        <div class="h-60 rounded-3xl bg-gradient-to-br from-primary/20 via-primary-light/10 to-transparent flex flex-col justify-between p-6 border border-primary/10 overflow-hidden relative mb-6">
-          <div class="absolute -right-16 -bottom-16 w-48 h-48 rounded-full bg-primary/10 blur-xl"></div>
-          <span class="text-3xl">📱</span>
-          <div>
-            <span class="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Tecnología</span>
-            <h3 class="text-2xl font-extrabold text-dark mt-2 leading-tight">iPhone 15 Pro Max 256GB</h3>
+        <!-- Card Image -->
+        <div class="h-60 rounded-3xl overflow-hidden relative mb-6 border border-slate-100 shadow-inner group">
+          <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80" alt="iPhone 15 Pro Max" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/20 to-transparent flex flex-col justify-end p-6">
+            <span class="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider w-max shadow-sm">Tecnología</span>
+            <h3 class="text-2xl font-extrabold text-white mt-2 leading-tight">iPhone 15 Pro Max 256GB</h3>
           </div>
         </div>
         
@@ -72,7 +71,7 @@
             <span>72% Vendido</span>
             <span>280 / 1000 Libres</span>
           </div>
-          <a href="/raffles/iphone-15" class="block w-full py-4 text-center bg-dark hover:bg-primary text-white font-bold rounded-2xl shadow-lg transition-colors duration-300">
+          <a href="/raffles" class="block w-full py-4 text-center bg-dark hover:bg-primary text-white font-bold rounded-2xl shadow-lg transition-colors duration-300">
             Comprar Boletos
           </a>
         </div>
@@ -155,10 +154,10 @@
       <% }) %>
     <% } else { %>
       <!-- Fallback Mock Card 1 -->
-      <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between opacity-85">
+      <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between opacity-90">
         <div>
-          <div class="h-48 bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center relative overflow-hidden">
-            <span class="text-5xl group-hover:scale-110 transition-transform duration-300">🏍️</span>
+          <div class="h-48 overflow-hidden relative border-b border-slate-100">
+            <img src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=600&q=80" alt="Moto Honda XR" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
           </div>
           <div class="p-6">
             <div class="flex items-center justify-between mb-3">
@@ -166,7 +165,7 @@
               <span class="text-xs font-bold text-slate-500">Ejemplo</span>
             </div>
             <h3 class="text-xl font-bold text-dark mb-2 leading-snug hover:text-primary transition-colors">Honda XR 150L 2026</h3>
-            <p class="text-slate-500 text-xs line-clamp-2 mb-4">Ejemplo de sorteo de moto todoterreno. Registrate y crea el tuyo propio de forma fácil.</p>
+            <p class="text-slate-500 text-xs line-clamp-2 mb-4">Ejemplo de sorteo de moto todoterreno. Regístrate y crea el tuyo propio de forma fácil.</p>
           </div>
         </div>
         <div class="p-6 pt-0 border-t border-borderCustom/40 mt-auto">
@@ -188,10 +187,10 @@
       </div>
 
       <!-- Fallback Mock Card 2 -->
-      <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between opacity-85">
+      <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between opacity-90">
         <div>
-          <div class="h-48 bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center relative overflow-hidden">
-            <span class="text-5xl group-hover:scale-110 transition-transform duration-300">💻</span>
+          <div class="h-48 overflow-hidden relative border-b border-slate-100">
+            <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80" alt="MacBook Pro" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
           </div>
           <div class="p-6">
             <div class="flex items-center justify-between mb-3">
@@ -221,10 +220,10 @@
       </div>
 
       <!-- Fallback Mock Card 3 -->
-      <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between opacity-85">
+      <div class="bg-white rounded-3xl border border-borderCustom overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between opacity-90">
         <div>
-          <div class="h-48 bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center relative overflow-hidden">
-            <span class="text-5xl group-hover:scale-110 transition-transform duration-300">💵</span>
+          <div class="h-48 overflow-hidden relative border-b border-slate-100">
+            <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=600&q=80" alt="Efectivo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
           </div>
           <div class="p-6">
             <div class="flex items-center justify-between mb-3">
