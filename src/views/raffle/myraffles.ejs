@@ -261,13 +261,16 @@
                   </a>
                 <% } %>
                 <!-- Delete Button -->
-                <% if (raffle.soldTickets === 0) { %>
-                  <form action="/raffles/<%= raffle._id %>/delete" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este sorteo?')">
-                    <button type="submit" class="p-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-xl transition-colors text-xs font-bold" title="Eliminar Sorteo">
-                      🗑️
-                    </button>
-                  </form>
-                <% } %>
+                <% 
+                  const deleteConfirmMsg = raffle.soldTickets > 0 
+                    ? '¡ATENCIÓN! Este sorteo ya tiene boletos vendidos. Si lo eliminas, se borrarán permanentemente todos los participantes, números, comprobantes y pagos asociados de forma irreversible. ¿Estás COMPLETAMENTE seguro de continuar?' 
+                    : '¿Estás seguro de eliminar este sorteo?';
+                %>
+                <form action="/raffles/<%= raffle._id %>/delete" method="POST" class="inline" onsubmit="return confirm('<%= deleteConfirmMsg %>')">
+                  <button type="submit" class="p-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-xl transition-colors text-xs font-bold" title="Eliminar Sorteo">
+                    🗑️ Borrar Sorteo
+                  </button>
+                </form>
               </div>
 
               <!-- Main actions -->

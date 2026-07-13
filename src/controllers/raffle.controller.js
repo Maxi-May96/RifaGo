@@ -3,10 +3,11 @@ import Raffle from '../models/Raffle.js';
 import Category from '../models/Category.js';
 import Purchase from '../models/Purchase.js';
 import Payment from '../models/Payment.js';
-import { uploadFile } from '../services/firebase.service.js';
+import { uploadFile, deleteUploadedFile } from '../services/firebase.service.js';
 import { GOOGLE_MAPS_API_KEY, APP_BASE_URL } from '../config/env.js';
 import Coupon from '../models/Coupon.js';
 import { createPreference } from '../services/payment.service.js';
+import NumberModel from '../models/Number.js';
 
 // GET list of own and participated raffles
 export const getMyRaffles = async (req, res) => {
@@ -376,7 +377,7 @@ export const duplicateRaffle = async (req, res) => {
   }
 };
 
-// POST delete an existing raffle (Only if unsold)
+// POST delete an existing raffle (Full cascaded delete including participants & images)
 export const deleteRaffle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -391,14 +392,30 @@ export const deleteRaffle = async (req, res) => {
       return res.status(403).render('errors/500', { title: 'No Autorizado - RifaGo', layout: false });
     }
 
-    // Business check: Can only delete if no ticket has been sold
-    if (raffle.soldTickets > 0) {
-      return res.status(400).redirect('/raffles/myraffles?error=No se puede eliminar un sorteo con boletos vendidos');
+    // 1. Gather all associated image URLs to delete them physically
+    const urlsToDelete = [];
+    if (raffle.image) urlsToDelete.push(raffle.image);
+    if (raffle.images && raffle.images.length > 0) {
+      urlsToDelete.push(...raffle.images);
+    }
+    if (raffle.premios && raffle.premios.length > 0) {
+      raffle.premios.forEach(p => {
+        if (p.imagen) urlsToDelete.push(p.imagen);
+      });
     }
 
+    // Physically delete all files (local or Firebase Cloud Storage)
+    for (const url of urlsToDelete) {
+      await deleteUploadedFile(url);
+    }
+
+    // 2. Cascade delete from database
+    await NumberModel.deleteMany({ raffle: id });
+    await Purchase.deleteMany({ raffle: id });
+    await Payment.deleteMany({ raffle: id });
     await Raffle.findByIdAndDelete(id);
 
-    res.redirect('/raffles/myraffles');
+    res.redirect('/raffles/myraffles?success=Sorteo eliminado con éxito');
   } catch (error) {
     console.error('Error deleting raffle:', error);
     res.redirect('/raffles/myraffles?error=Error al eliminar sorteo');

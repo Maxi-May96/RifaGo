@@ -2,6 +2,10 @@ import firebaseApp from '../config/firebase.js';
 import admin from 'firebase-admin';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Uploads a local file (processed by multer) to Firebase Cloud Storage.
@@ -50,5 +54,41 @@ export const uploadFile = async (file, folder = 'raffles') => {
     console.error('[Firebase Service] Upload failed, returning local fallback path:', error);
     // Return local fallback path (file remains on disk)
     return `/uploads/${folder}/${file.filename}`;
+  }
+};
+
+/**
+ * Deletes an uploaded file, handling both local storage and Firebase Cloud Storage.
+ * 
+ * @param {string} url - Public URL or relative path of the file to delete
+ */
+export const deleteUploadedFile = async (url) => {
+  if (!url) return;
+
+  try {
+    // 1. Firebase deletion
+    if (firebaseApp && url.startsWith('https://storage.googleapis.com/')) {
+      const bucket = admin.storage().bucket();
+      const prefix = `https://storage.googleapis.com/${bucket.name}/`;
+      if (url.startsWith(prefix)) {
+        const fileRelativePath = url.replace(prefix, '');
+        const fileRef = bucket.file(decodeURIComponent(fileRelativePath));
+        await fileRef.delete();
+        console.log(`[Firebase Service] Deleted remote file: ${fileRelativePath}`);
+        return;
+      }
+    }
+
+    // 2. Local deletion fallback
+    if (url.startsWith('/uploads/')) {
+      // Relative path: /uploads/raffles/filename.ext
+      const localFilePath = path.join(__dirname, '../public', url);
+      if (fs.existsSync(localFilePath)) {
+        fs.unlinkSync(localFilePath);
+        console.log(`[Firebase Service] Deleted local file: ${localFilePath}`);
+      }
+    }
+  } catch (error) {
+    console.error(`[Firebase Service] Error deleting file (${url}):`, error);
   }
 };
