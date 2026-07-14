@@ -1,45 +1,8 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 
-import os from 'os';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Serverless environments (like Vercel) have a read-only filesystem, except for /tmp.
-// We write temporary uploads there before sending them to Firebase.
-const isServerless = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production';
-const uploadsDir = isServerless 
-  ? path.join(os.tmpdir(), 'uploads') 
-  : path.join(__dirname, '../public/uploads');
-
-// Setup Disk Storage with dynamic folder allocation
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let targetFolder = uploadsDir;
-    if (file.fieldname === 'profilePhoto') {
-      targetFolder = path.join(uploadsDir, 'avatars');
-    } else if (file.fieldname === 'documentPhoto') {
-      targetFolder = path.join(uploadsDir, 'documents');
-    } else {
-      targetFolder = path.join(uploadsDir, 'raffles');
-    }
-    
-    // Ensure destination directory is created
-    if (!fs.existsSync(targetFolder)) {
-      fs.mkdirSync(targetFolder, { recursive: true });
-    }
-    
-    cb(null, targetFolder);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-  }
-});
+// Setup Memory Storage
+const storage = multer.memoryStorage();
 
 // File extensions and MIME validator
 const fileFilter = (req, file, cb) => {

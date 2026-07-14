@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Purchase from '../models/Purchase.js';
 import Withdrawal from '../models/Withdrawal.js';
 import mongoose from 'mongoose';
+import { uploadFile, deleteUploadedFile } from '../services/firebase.service.js';
 
 // Renders the User Profile page
 export const getProfile = async (req, res) => {
@@ -140,13 +141,19 @@ export const updateProfile = async (req, res) => {
     user.alias = alias !== undefined ? alias : user.alias;
     user.bankName = bankName !== undefined ? bankName : user.bankName;
 
-    // Map uploaded file paths if present
+    // Map uploaded files to Firebase if present
     if (req.files) {
       if (req.files['profilePhoto']) {
-        user.profilePhoto = '/uploads/avatars/' + req.files['profilePhoto'][0].filename;
+        if (user.profilePhoto) {
+          await deleteUploadedFile(user.profilePhoto);
+        }
+        user.profilePhoto = await uploadFile(req.files['profilePhoto'][0], 'avatars');
       }
       if (req.files['documentPhoto']) {
-        user.documentPhoto = '/uploads/documents/' + req.files['documentPhoto'][0].filename;
+        if (user.documentPhoto) {
+          await deleteUploadedFile(user.documentPhoto);
+        }
+        user.documentPhoto = await uploadFile(req.files['documentPhoto'][0], 'documents');
         // Reset verification status so the admin can review the new document
         user.isVerified = false;
       }

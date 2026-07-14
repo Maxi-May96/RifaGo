@@ -1,72 +1,60 @@
 import firebaseApp from '../config/firebase.js';
 import admin from 'firebase-admin';
-import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
- * Uploads a local file (processed by multer) to Firebase Cloud Storage.
- * Cleans up the local copy on successful upload.
- * Falls back to returning the local public relative URL if Firebase is not active.
+ * Uploads an in-memory file buffer (processed by multer memoryStorage) to Firebase Cloud Storage.
  * 
- * @param {Object} file - Multer file object
+ * @param {Object} file - Multer file object containing buffer
  * @param {string} folder - Destination subdirectory
- * @returns {Promise<string>} Uploaded file URL or local fallback path
+ * @returns {Promise<string>} Uploaded file public URL
  */
 export const uploadFile = async (file, folder = 'raffles') => {
-  if (!file) return '';
+  if (!file || !file.buffer) return '';
 
-  // Fallback to local if Firebase is not configured
   if (!firebaseApp) {
-    console.warn(`[Firebase Service] Fallback: Using local storage path for ${file.filename}`);
-    return `/uploads/${folder}/${file.filename}`;
+    throw new Error('[Firebase Service] Firebase is not initialized. Cannot upload image.');
   }
 
   try {
     const bucket = admin.storage().bucket();
-    const destination = `${folder}/${Date.now()}-${file.filename}`;
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    const destination = `${folder}/${file.fieldname}-${uniqueSuffix}${ext}`;
 
-    // Upload local file to Firebase bucket
-    const [uploadedFile] = await bucket.upload(file.path, {
-      destination,
+    const fileRef = bucket.file(destination);
+
+    // Save the buffer directly to Firebase storage
+    await fileRef.save(file.buffer, {
       metadata: {
         contentType: file.mimetype
-      }
+      },
+      resumable: false
     });
 
     // Make the file publicly accessible
-    await uploadedFile.makePublic();
+    await fileRef.makePublic();
 
     // Construct the public URL
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${uploadedFile.name}`;
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
 
-    // Delete local temporary file
-    if (fs.existsSync(file.path)) {
-      fs.unlinkSync(file.path);
-    }
-
-    console.log(`[Firebase Service] Success: Uploaded to ${publicUrl}`);
+    console.log(`[Firebase Service] Success: Uploaded directly to ${publicUrl}`);
     return publicUrl;
   } catch (error) {
-    console.error('[Firebase Service] Upload failed, returning local fallback path:', error);
-    // Return local fallback path (file remains on disk)
-    return `/uploads/${folder}/${file.filename}`;
+    console.error('[Firebase Service] Upload failed:', error);
+    throw error;
   }
 };
 
 /**
- * Deletes an uploaded file, handling both local storage and Firebase Cloud Storage.
+ * Deletes an uploaded file, handling Firebase Cloud Storage.
  * 
- * @param {string} url - Public URL or relative path of the file to delete
+ * @param {string} url - Public URL of the file to delete
  */
 export const deleteUploadedFile = async (url) => {
   if (!url) return;
 
   try {
-    // 1. Firebase deletion
     if (firebaseApp && url.startsWith('https://storage.googleapis.com/')) {
       const bucket = admin.storage().bucket();
       const prefix = `https://storage.googleapis.com/${bucket.name}/`;
@@ -75,17 +63,6 @@ export const deleteUploadedFile = async (url) => {
         const fileRef = bucket.file(decodeURIComponent(fileRelativePath));
         await fileRef.delete();
         console.log(`[Firebase Service] Deleted remote file: ${fileRelativePath}`);
-        return;
-      }
-    }
-
-    // 2. Local deletion fallback
-    if (url.startsWith('/uploads/')) {
-      // Relative path: /uploads/raffles/filename.ext
-      const localFilePath = path.join(__dirname, '../public', url);
-      if (fs.existsSync(localFilePath)) {
-        fs.unlinkSync(localFilePath);
-        console.log(`[Firebase Service] Deleted local file: ${localFilePath}`);
       }
     }
   } catch (error) {
