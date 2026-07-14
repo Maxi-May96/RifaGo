@@ -5,9 +5,15 @@
       <h1 class="text-3xl font-extrabold tracking-tight">Panel de Administración</h1>
       <p class="text-primary-light mt-2 text-sm md:text-base opacity-90">Hola, <span class="font-bold"><%= user.name %></span>. Aquí tienes el estado actual y rendimiento de RifaGo.</p>
     </div>
-    <div class="flex gap-3">
-      <a href="/raffles/create" class="bg-secondary text-dark hover:bg-yellow-300 font-bold px-6 py-3 rounded-xl shadow-lg transition-colors text-sm">
-        + Crear Nuevo Sorteo
+    <div class="flex flex-wrap gap-3">
+      <a href="/admin/coupons" class="bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold px-5 py-3 rounded-xl transition-all text-sm flex items-center space-x-2 shadow-sm">
+        <span>🏷️</span> <span>Gestionar Cupones</span>
+      </a>
+      <a href="/admin/users" class="bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold px-5 py-3 rounded-xl transition-all text-sm flex items-center space-x-2 shadow-sm">
+        <span>👥</span> <span>Gestionar Usuarios</span>
+      </a>
+      <a href="/raffles/create" class="bg-secondary text-dark hover:bg-yellow-300 font-bold px-5 py-3 rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center space-x-2">
+        <span>＋</span> <span>Crear Sorteo</span>
       </a>
     </div>
   </div>

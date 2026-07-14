@@ -282,6 +282,32 @@ export const postCreateRaffle = async (req, res) => {
       creationPaid: isCreationPaid
     });
 
+    // Validate and increment coupon usage if applied
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (coupon) {
+        // Expiration check
+        if (coupon.expirationDate && new Date(coupon.expirationDate) < new Date()) {
+          return res.status(400).render('raffle/create', {
+            title: 'Crear Nuevo Sorteo - RifaGo',
+            googleMapsApiKey: GOOGLE_MAPS_API_KEY || '',
+            error: 'El código de descuento ingresado ha caducado.'
+          });
+        }
+        // Usage limit check
+        if (coupon.usageLimit !== null && coupon.usageLimit !== undefined && coupon.usageCount >= coupon.usageLimit) {
+          return res.status(400).render('raffle/create', {
+            title: 'Crear Nuevo Sorteo - RifaGo',
+            googleMapsApiKey: GOOGLE_MAPS_API_KEY || '',
+            error: 'El código de descuento ingresado ha superado su límite de usos.'
+          });
+        }
+        // Increment usage
+        coupon.usageCount += 1;
+        await coupon.save();
+      }
+    }
+
     await newRaffle.save();
 
     // If it's published and requires creation fee payment, create Mercado Pago Preference
@@ -524,7 +550,17 @@ export const validateCoupon = async (req, res) => {
     
     const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
     if (!coupon) {
-      return res.json({ valid: false, message: 'Código de descuento inválido o vencido' });
+      return res.json({ valid: false, message: 'Código de descuento inválido o inactivo' });
+    }
+
+    // Check expiration date
+    if (coupon.expirationDate && new Date(coupon.expirationDate) < new Date()) {
+      return res.json({ valid: false, message: 'El cupón ha caducado' });
+    }
+
+    // Check usage limit
+    if (coupon.usageLimit !== null && coupon.usageLimit !== undefined && coupon.usageCount >= coupon.usageLimit) {
+      return res.json({ valid: false, message: 'El cupón ha agotado su límite de usos' });
     }
     
     res.json({

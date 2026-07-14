@@ -1,0 +1,212 @@
+<div class="space-y-8">
+  <!-- Header / Breadcrumbs -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-dark">Gestión de Cupones</h1>
+      <p class="text-slate-500 text-sm mt-1">Crea, administra y monitorea el uso de los cupones de descuento para la creación de sorteos.</p>
+    </div>
+    <div>
+      <a href="/admin/dashboard" class="text-sm font-bold text-primary hover:text-primary-light flex items-center space-x-1.5 transition-colors">
+        <span>← Volver al Dashboard</span>
+      </a>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-4 py-3 rounded-xl">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold px-4 py-3 rounded-xl">
+      <%= success %>
+    </div>
+  <% } %>
+
+  <!-- Indicator Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Emitidos</span>
+        <h3 class="text-3xl font-black text-dark"><%= stats.totalCoupons %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center text-xl">🏷️</div>
+    </div>
+    
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Cupones Activos</span>
+        <h3 class="text-3xl font-black text-dark text-emerald-600"><%= stats.activeCoupons %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">⚡</div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Expirados / Agotados</span>
+        <h3 class="text-3xl font-black text-dark text-red-600"><%= stats.expiredOrUsedCoupons %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-xl">🛑</div>
+    </div>
+  </div>
+
+  <!-- Layout Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left: Create Coupon Form -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-6 space-y-6">
+        <div class="border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-extrabold text-dark">Nuevo Cupón</h2>
+          <p class="text-xs text-slate-400 mt-1">Configura un nuevo código promocional.</p>
+        </div>
+
+        <form action="/admin/coupons" method="POST" class="space-y-4">
+          <!-- Code -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Código *</label>
+            <input type="text" name="code" required placeholder="Ej: RIFAGO100" 
+                   class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all uppercase font-mono">
+          </div>
+
+          <!-- Type -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Tipo de Descuento *</label>
+            <select name="discountType" id="discountTypeSelect" onchange="updateValueSuffix()" 
+                    class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+              <option value="percentage">Porcentaje (%)</option>
+              <option value="fixed">Monto Fijo (ARS)</option>
+            </select>
+          </div>
+
+          <!-- Value -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Valor del Descuento *</label>
+            <div class="relative">
+              <input type="number" name="discountValue" required min="0" placeholder="Ej: 50" 
+                     class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-12">
+              <span id="valueSuffix" class="absolute inset-y-0 right-0 flex items-center pr-4 text-sm font-extrabold text-slate-400">%</span>
+            </div>
+          </div>
+
+          <!-- Expiration Date -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha de Caducidad (Opcional)</label>
+            <input type="date" name="expirationDate" 
+                   class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            <p class="text-[10px] text-slate-400">Si se deja vacío, el cupón no tendrá vencimiento temporal.</p>
+          </div>
+
+          <!-- Usage Limit -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Límite de Usos (Opcional)</label>
+            <input type="number" name="usageLimit" min="1" placeholder="Ej: 50" 
+                   class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            <p class="text-[10px] text-slate-400">Cantidad total de veces que puede aplicarse este cupón en el sitio.</p>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="w-full bg-primary hover:bg-primary-light text-white font-extrabold py-3.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center space-x-2 mt-6 cursor-pointer">
+            <span>✨</span>
+            <span>Crear Cupón</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: Coupons List Table -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-6 space-y-6 overflow-hidden">
+        <div class="border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-extrabold text-dark">Códigos de Descuento Activos</h2>
+          <p class="text-xs text-slate-400 mt-1">Lista completa de cupones creados en la plataforma.</p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-borderCustom text-slate-400 text-xs font-bold uppercase tracking-wider">
+                <th class="pb-3 font-semibold">Código</th>
+                <th class="pb-3 font-semibold">Descuento</th>
+                <th class="pb-3 font-semibold">Uso / Límite</th>
+                <th class="pb-3 font-semibold">Vencimiento</th>
+                <th class="pb-3 font-semibold">Estado</th>
+                <th class="pb-3 font-semibold text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-sm">
+              <% if (coupons.length > 0) { %>
+                <% coupons.forEach(c => { 
+                  let isExpired = c.expirationDate && new Date(c.expirationDate) < new Date();
+                  let isLimitReached = c.usageLimit !== null && c.usageLimit !== undefined && c.usageCount >= c.usageLimit;
+                  let isCouponActive = c.isActive && !isExpired && !isLimitReached;
+                  
+                  let statusBadge = '';
+                  if (isCouponActive) {
+                    statusBadge = '<span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 text-[10px] font-black uppercase rounded-full tracking-wider shadow-sm">Activo</span>';
+                  } else if (isLimitReached) {
+                    statusBadge = '<span class="bg-amber-50 text-amber-700 px-2.5 py-1 text-[10px] font-black uppercase rounded-full tracking-wider shadow-sm">Agotado</span>';
+                  } else {
+                    statusBadge = '<span class="bg-red-50 text-red-700 px-2.5 py-1 text-[10px] font-black uppercase rounded-full tracking-wider shadow-sm">Caducado</span>';
+                  }
+                %>
+                  <tr class="hover:bg-slate-50/50 transition-colors">
+                    <!-- Code -->
+                    <td class="py-4 font-mono font-black text-primary text-sm">
+                      <span class="bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-lg">
+                        <%= c.code %>
+                      </span>
+                    </td>
+                    <!-- Value -->
+                    <td class="py-4 font-extrabold text-dark">
+                      <%= c.discountType === 'percentage' ? `${c.discountValue}%` : `$${c.discountValue} ARS` %>
+                    </td>
+                    <!-- Limit -->
+                    <td class="py-4 text-slate-500 font-bold">
+                      <%= c.usageCount %> / <%= c.usageLimit !== null ? c.usageLimit : '∞' %>
+                    </td>
+                    <!-- Expiry -->
+                    <td class="py-4 text-slate-500 font-bold">
+                      <%= c.expirationDate ? new Date(c.expirationDate).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : 'Nunca' %>
+                    </td>
+                    <!-- Status -->
+                    <td class="py-4 font-bold">
+                      <%- statusBadge %>
+                    </td>
+                    <!-- Actions -->
+                    <td class="py-4 text-right">
+                      <form action="/admin/coupons/<%= c._id %>/delete" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar el cupón <%= c.code %>?')">
+                        <button type="submit" class="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors cursor-pointer" title="Eliminar Cupón">
+                          🗑️
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-slate-400 font-bold">
+                    <span class="text-3xl block mb-2">🏷️</span>
+                    No se han registrado cupones en el sistema.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateValueSuffix() {
+    const select = document.getElementById('discountTypeSelect');
+    const suffix = document.getElementById('valueSuffix');
+    if (select.value === 'percentage') {
+      suffix.innerText = '%';
+    } else {
+      suffix.innerText = '$';
+    }
+  }
+</script>

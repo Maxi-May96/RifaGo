@@ -18,6 +18,20 @@ const CouponSchema = new mongoose.Schema({
     required: [true, 'El valor del descuento es obligatorio'],
     min: [0, 'El valor no puede ser negativo']
   },
+  expirationDate: {
+    type: Date,
+    default: null
+  },
+  usageLimit: {
+    type: Number,
+    default: null,
+    min: [1, 'El límite de usos debe ser al menos 1']
+  },
+  usageCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   isActive: {
     type: Boolean,
     default: true
