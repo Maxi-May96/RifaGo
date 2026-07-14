@@ -36,6 +36,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(setUser); // Inject res.locals.user into EJS templates if logged in
+app.use((req, res, next) => {
+  res.locals.APP_BASE_URL = `${req.protocol}://${req.get('host')}`;
+  next();
+});
 
 // Static Assets
 app.use(express.static(path.join(__dirname, 'public')));

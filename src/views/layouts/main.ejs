@@ -3,7 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%- typeof title !== 'undefined' ? title : 'RifaGo - Sorteos y Rifas Online' %></title>
+  <title><%- typeof title !== 'undefined' ? title : 'RifaGo - Sorteos y Rifas Online | Crea, comparte y gana' %></title>
+  
+  <!-- SEO & Marketing Meta Tags -->
+  <meta name="description" content="La plataforma de sorteos y rifas online número 1. Crea tu sorteo personalizado en minutos con cobros automatizados vía Mercado Pago. Rápido, transparente, fácil y 100% seguro. ¡Empieza a recaudar hoy mismo!">
+  <meta name="keywords" content="rifas online, sorteos digitales, crear rifa en linea, ganar premios, mercadopago, rifas argentina, plataforma de rifas, recaudacion de fondos, sorteos transparentes, sorteo express, rifa digital">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="RifaGo">
+  
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= typeof APP_BASE_URL !== 'undefined' ? APP_BASE_URL : '' %>">
+  <meta property="og:title" content="RifaGo - Sorteos y Rifas Online | Crea, comparte y gana">
+  <meta property="og:description" content="La plataforma líder de rifas y sorteos online en minutos. Fácil de organizar, integrada con Mercado Pago y 100% transparente para ti y tus participantes.">
+  <meta property="og:image" content="<%= typeof APP_BASE_URL !== 'undefined' ? APP_BASE_URL : '' %>/images/logo.png">
+  <meta property="og:site_name" content="RifaGo">
+  <meta property="og:locale" content="es_AR">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="<%= typeof APP_BASE_URL !== 'undefined' ? APP_BASE_URL : '' %>">
+  <meta property="twitter:title" content="RifaGo - Sorteos y Rifas Online | Crea, comparte y gana">
+  <meta property="twitter:description" content="La plataforma líder de rifas y sorteos online en minutos. Fácil de organizar, integrada con Mercado Pago y 100% transparente para ti y tus participantes.">
+  <meta property="twitter:image" content="<%= typeof APP_BASE_URL !== 'undefined' ? APP_BASE_URL : '' %>/images/logo.png">
+
   <link rel="shortcut icon" href="/images/logo.ico" type="image/x-icon">
   
   <!-- Font Integration -->
