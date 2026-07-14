@@ -439,10 +439,13 @@ function padNumber(num, total) {
     return String(num).padStart(padLen, '0');
   }
 
-  // Select random available tickets
   function selectRandomTickets(count) {
     const allBtns = Array.from(document.querySelectorAll('.ticket-btn'));
-    const availBtns = allBtns.filter(btn => btn.getAttribute('data-sold') === 'false');
+    const availBtns = allBtns.filter(btn => 
+      btn.getAttribute('data-sold') !== 'true' && 
+      btn.getAttribute('data-pending') !== 'true' && 
+      btn.getAttribute('data-reserved') !== 'true'
+    );
     const availNums = availBtns.map(btn => parseInt(btn.getAttribute('data-number')));
     
     const unselectedAvailNums = availNums.filter(num => !selectedTickets.includes(num));
