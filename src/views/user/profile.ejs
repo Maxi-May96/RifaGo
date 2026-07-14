@@ -56,9 +56,23 @@
       </div>
     </div>
 
-    <!-- Right Column: Details & Uploads Form -->
-    <div class="lg:col-span-8">
-      <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-8">
+    <!-- Right Column: Details & Tabs -->
+    <div class="lg:col-span-8 space-y-6">
+      
+      <!-- Tab Selector -->
+      <div class="flex bg-slate-100/80 p-1.5 rounded-2xl max-w-md border border-slate-200/50 shadow-sm">
+        <button onclick="switchTab('profile-details')" id="tab-profile-details" 
+          class="flex-1 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 bg-white text-dark shadow-sm">
+          📋 Datos del Perfil
+        </button>
+        <button onclick="switchTab('profile-balance')" id="tab-profile-balance" 
+          class="flex-1 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 text-slate-500 hover:text-dark">
+          💼 Balance y Retiros
+        </button>
+      </div>
+
+      <!-- Tab Content: Details & Uploads Form -->
+      <div id="content-profile-details" class="bg-white rounded-3xl border border-borderCustom shadow-sm p-8 transition-all duration-300">
         <h3 class="text-2xl font-extrabold text-dark tracking-tight mb-6">Detalles del Perfil</h3>
         
         <form action="/user/profile" method="POST" enctype="multipart/form-data" class="space-y-6">
@@ -133,7 +147,270 @@
           </button>
         </form>
       </div>
+
+      <!-- Tab Content: Balance & Financials -->
+      <div id="content-profile-balance" class="bg-white rounded-3xl border border-borderCustom shadow-sm p-8 transition-all duration-300 hidden space-y-8">
+        <div>
+          <h3 class="text-2xl font-extrabold text-dark tracking-tight">Finanzas y Balance</h3>
+          <p class="text-xs text-slate-400 mt-1">Monitorea tus ingresos generados, gastos y solicita retiros de dinero.</p>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex flex-col justify-between">
+            <span class="text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Ingresos de Sorteos</span>
+            <span class="font-black text-dark text-xl mt-2 block">$<%= totalEarned.toLocaleString('es-AR') %> ARS</span>
+            <p class="text-[10px] text-slate-400 mt-1">Histórico generado por boletos vendidos</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex flex-col justify-between">
+            <span class="text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Retiros Realizados</span>
+            <span class="font-black text-slate-600 text-xl mt-2 block">$<%= totalWithdrawn.toLocaleString('es-AR') %> ARS</span>
+            <p class="text-[10px] text-slate-400 mt-1">Fondos ya transferidos a tu cuenta</p>
+          </div>
+          <div class="bg-emerald-50/50 border border-emerald-100 p-5 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute right-2 -bottom-2 text-6xl opacity-10">💵</div>
+            <span class="text-emerald-700 font-extrabold uppercase text-[10px] tracking-wider block">Saldo Disponible</span>
+            <span class="font-black text-emerald-600 text-xl mt-2 block">$<%= withdrawableAmount.toLocaleString('es-AR') %> ARS</span>
+            <p class="text-[10px] text-emerald-600 mt-1">Listo para ser transferido</p>
+          </div>
+        </div>
+
+        <!-- Action Bar: Withdraw Funds -->
+        <div class="bg-indigo-50/40 border border-indigo-100/50 p-6 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="space-y-1">
+            <h4 class="font-black text-indigo-950 text-sm">¿Deseas retirar tu saldo generado?</h4>
+            <p class="text-xs text-indigo-700/80 font-semibold">Puedes solicitar retiros directos a tu banco o billetera digital preferida.</p>
+          </div>
+          <% if (withdrawableAmount >= 100) { %>
+            <button onclick="openWithdrawModal()" class="bg-gradient-to-r from-primary to-primary-light hover:from-primary-light hover:to-primary text-white font-extrabold text-xs py-3 px-6 rounded-xl shadow-md uppercase tracking-wider transition-all duration-300">
+              Retirar dinero generado
+            </button>
+          <% } else { %>
+            <button disabled class="bg-slate-200 text-slate-400 cursor-not-allowed font-extrabold text-xs py-3 px-6 rounded-xl uppercase tracking-wider">
+              Mínimo $100 para retirar
+            </button>
+          <% } %>
+        </div>
+
+        <!-- Report Generation PDF Form -->
+        <div class="border-t border-slate-100 pt-6">
+          <h4 class="font-black text-dark text-sm mb-3">Generar Informe de Balance</h4>
+          <p class="text-xs text-slate-400 mb-4">Selecciona el período de meses para descargar tu reporte financiero oficial en PDF.</p>
+          
+          <form action="/user/balance/download-pdf" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label class="block text-slate-500 font-bold text-[10px] uppercase mb-1.5">Mes de Inicio</label>
+              <input type="month" name="startMonth" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-bold text-[10px] uppercase mb-1.5">Mes de Fin</label>
+              <input type="month" name="endMonth" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary">
+            </div>
+            <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-xl border border-slate-200 transition-colors flex items-center justify-center space-x-2">
+              <span>📄</span>
+              <span>Descargar Informe PDF</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Monthly Balance Table -->
+        <div class="border-t border-slate-100 pt-6 space-y-4">
+          <h4 class="font-black text-dark text-sm">Desglose de Saldos Mes a Mes</h4>
+          <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-extrabold uppercase">
+                  <th class="py-3 px-4">Periodo</th>
+                  <th class="py-3 px-4">Ingresos (Ventas)</th>
+                  <th class="py-3 px-4">Egresos (Compras)</th>
+                  <th class="py-3 px-4">Saldo Neto</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 font-medium text-slate-600">
+                <% if (monthlyBalances && monthlyBalances.length > 0) { %>
+                  <% monthlyBalances.forEach(item => { %>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                      <td class="py-3.5 px-4 font-bold text-dark"><%= item.key %></td>
+                      <td class="py-3.5 px-4 text-emerald-600 font-semibold">$<%= item.income.toLocaleString('es-AR') %></td>
+                      <td class="py-3.5 px-4 text-slate-400 font-semibold">$<%= item.expense.toLocaleString('es-AR') %></td>
+                      <td class="py-3.5 px-4 font-bold <%= item.net >= 0 ? 'text-emerald-600' : 'text-red-500' %>">
+                        <%= item.net >= 0 ? '+' : '' %>$<%= item.net.toLocaleString('es-AR') %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4" class="py-8 text-center text-slate-400 font-bold">No se registran movimientos de ingresos o egresos todavía.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Withdrawals Request History -->
+        <div class="border-t border-slate-100 pt-6 space-y-4">
+          <h4 class="font-black text-dark text-sm">Historial de Retiros</h4>
+          <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-extrabold uppercase">
+                  <th class="py-3 px-4">Fecha</th>
+                  <th class="py-3 px-4">Monto</th>
+                  <th class="py-3 px-4">Destino</th>
+                  <th class="py-3 px-4">Estado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 font-medium text-slate-600">
+                <% if (withdrawals && withdrawals.length > 0) { %>
+                  <% withdrawals.forEach(w => { %>
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                      <td class="py-3.5 px-4"><%= new Date(w.createdAt).toLocaleDateString('es-AR') %></td>
+                      <td class="py-3.5 px-4 font-bold text-dark">$<%= w.amount.toLocaleString('es-AR') %> ARS</td>
+                      <td class="py-3.5 px-4">
+                        <span class="block text-dark font-semibold"><%= w.destination.bankName %></span>
+                        <span class="block text-[10px] text-slate-400">CVU: <%= w.destination.cbu %></span>
+                      </td>
+                      <td class="py-3.5 px-4">
+                        <% if (w.status === 'pending') { %>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200/50 uppercase tracking-wider">Pendiente</span>
+                        <% } else if (w.status === 'completed') { %>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200/50 uppercase tracking-wider">Completado</span>
+                        <% } else if (w.status === 'rejected') { %>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-50 text-red-700 border border-red-200/50 uppercase tracking-wider">Rechazado</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4" class="py-8 text-center text-slate-400 font-bold">No has realizado ninguna solicitud de retiro aún.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
     </div>
+
+  </div>
+</div>
+
+<!-- Money Withdrawal Modal -->
+<div id="withdrawModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-dark/60 backdrop-blur-sm transition-opacity" onclick="closeWithdrawModal()"></div>
+
+  <!-- Content -->
+  <div class="flex min-h-full items-center justify-center p-4">
+    <div class="relative transform overflow-hidden rounded-3xl bg-white p-8 text-left shadow-2xl transition-all w-full max-w-lg border border-slate-100">
+      
+      <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
+        <div>
+          <h3 class="text-xl font-extrabold text-dark">Solicitud de Retiro</h3>
+          <p class="text-xs text-slate-400 mt-1">El monto mínimo a transferir es de $100 ARS.</p>
+        </div>
+        <button onclick="closeWithdrawModal()" class="text-slate-400 hover:text-dark text-lg font-bold">✕</button>
+      </div>
+
+      <form action="/user/withdraw" method="POST" class="space-y-5">
+        <!-- Amount -->
+        <div>
+          <label for="withdraw-amount" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Monto a retirar *</label>
+          <div class="relative">
+            <span class="absolute left-4 top-3 text-slate-400 font-black text-sm">$</span>
+            <input type="number" id="withdraw-amount" name="amount" min="100" max="<%= withdrawableAmount %>" required
+                   placeholder="Ej: 5000"
+                   class="w-full pl-8 pr-4 py-3 text-sm font-bold rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+          </div>
+          <span class="text-[10px] text-slate-400 mt-1 block">Saldo máximo retirable: $<%= withdrawableAmount.toLocaleString('es-AR') %> ARS</span>
+        </div>
+
+        <!-- Bank / Wallet Name -->
+        <div>
+          <label for="withdraw-bank" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Banco o Billetera destino *</label>
+          <input type="text" id="withdraw-bank" name="bankName" required placeholder="Ej: Mercado Pago, Brubank, Galicia"
+                 class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+
+        <!-- CBU / CVU -->
+        <div>
+          <label for="withdraw-cbu" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">CBU / CVU (22 dígitos) *</label>
+          <input type="text" id="withdraw-cbu" name="cbu" minlength="22" maxlength="22" required placeholder="Ej: 0000003100012345678901"
+                 class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+
+        <!-- Alias -->
+        <div>
+          <label for="withdraw-alias" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Alias de la Cuenta *</label>
+          <input type="text" id="withdraw-alias" name="alias" required placeholder="Ej: mi.cuenta.rifago"
+                 class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+
+        <!-- Holder Name -->
+        <div>
+          <label for="withdraw-holder" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Nombre del Titular de Cuenta *</label>
+          <input type="text" id="withdraw-holder" name="holderName" required placeholder="Ej: Juan Pérez"
+                 class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-light hover:to-primary text-white font-extrabold py-3.5 rounded-xl shadow-lg hover:shadow-primary/30 uppercase tracking-wider text-xs transition-all duration-300">
+          Enviar Solicitud
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(tabId) {
+    // Hide all contents
+    document.getElementById('content-profile-details').classList.add('hidden');
+    document.getElementById('content-profile-balance').classList.add('hidden');
+
+    // Reset button states
+    const btnDetails = document.getElementById('tab-profile-details');
+    const btnBalance = document.getElementById('tab-profile-balance');
+
+    btnDetails.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 text-slate-500 hover:text-dark";
+    btnBalance.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 text-slate-500 hover:text-dark";
+
+    // Show active content
+    document.getElementById('content-' + tabId).classList.remove('hidden');
+
+    // Set active button style
+    const activeBtn = document.getElementById('tab-' + tabId);
+    activeBtn.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 bg-white text-dark shadow-sm";
+
+    // Update query param without reload
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabId.replace('profile-', ''));
+    window.history.pushState({}, '', url);
+  }
+
+  function openWithdrawModal() {
+    document.getElementById('withdrawModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Lock background scroll
+  }
+
+  function closeWithdrawModal() {
+    document.getElementById('withdrawModal').classList.add('hidden');
+    document.body.style.overflow = ''; // Unlock scroll
+  }
+
+  // Handle onload tab selection checking URL query string
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam === 'balance') {
+      switchTab('profile-balance');
+    }
+  });
+</script>
 
   </div>
 </div>
