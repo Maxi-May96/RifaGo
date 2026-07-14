@@ -36,29 +36,42 @@ export const createPreference = async ({
 
     const preference = new Preference(client);
     
+    const successUrl = backUrlSuccess && !backUrlSuccess.includes('undefined') 
+      ? backUrlSuccess 
+      : `${APP_BASE_URL}/`;
+      
+    const failureUrl = backUrlFailure && !backUrlFailure.includes('undefined') 
+      ? backUrlFailure 
+      : `${APP_BASE_URL}/`;
+
     // Mercado Pago webhook URL path
     const webhookUrl = `${APP_BASE_URL}/payments/webhook`;
 
-    const response = await preference.create({
-      body: {
-        items: [
-          {
-            title: title,
-            quantity: Number(quantity),
-            unit_price: Number(unitPrice),
-            currency_id: 'ARS', // Can be customized per region
-          }
-        ],
-        back_urls: {
-          success: backUrlSuccess,
-          failure: backUrlFailure,
-          pending: backUrlFailure,
-        },
-        auto_return: 'approved',
-        external_reference: externalReference,
-        notification_url: webhookUrl,
-      }
-    });
+    const body = {
+      items: [
+        {
+          title: title,
+          quantity: Number(quantity),
+          unit_price: Number(unitPrice),
+          currency_id: 'ARS',
+        }
+      ],
+      back_urls: {
+        success: successUrl,
+        failure: failureUrl,
+        pending: failureUrl,
+      },
+      auto_return: 'approved',
+      external_reference: externalReference,
+    };
+
+    // Mercado Pago only accepts HTTPS/public URLs for notification_url.
+    // If running on localhost/127.0.0.1, omit it to avoid preference creation errors.
+    if (!webhookUrl.includes('localhost') && !webhookUrl.includes('127.0.0.1')) {
+      body.notification_url = webhookUrl;
+    }
+
+    const response = await preference.create({ body });
 
     return response;
   } catch (error) {

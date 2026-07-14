@@ -28,4 +28,14 @@ export const MERCADOPAGO = {
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
 };
 
-export const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3005';
+const getAppBaseUrl = () => {
+  if (process.env.APP_BASE_URL && process.env.APP_BASE_URL.trim() !== '') {
+    return process.env.APP_BASE_URL.trim();
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3005';
+};
+
+export const APP_BASE_URL = getAppBaseUrl();
