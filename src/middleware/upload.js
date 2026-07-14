@@ -37,6 +37,11 @@ const storage = multer.diskStorage({
 
 // File extensions and MIME validator
 const fileFilter = (req, file, cb) => {
+  // If file input was submitted empty, skip it gracefully
+  if (!file.originalname || file.originalname.trim() === '') {
+    return cb(null, false);
+  }
+
   const allowedTypes = /jpeg|jpg|png/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
