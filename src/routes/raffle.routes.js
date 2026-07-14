@@ -11,7 +11,8 @@ import {
   getRafflesList,
   drawRaffle,
   confirmRaffleCreation,
-  failRaffleCreation
+  failRaffleCreation,
+  reportRaffle
 } from '../controllers/raffle.controller.js';
 import { protect } from '../middleware/auth.js';
 import { upload } from '../middleware/upload.js';
@@ -26,6 +27,7 @@ router.post('/create', protect, upload.any(), postCreateRaffle);
 router.post('/:id/duplicate', protect, duplicateRaffle);
 router.post('/:id/delete', protect, deleteRaffle);
 router.post('/:id/draw', protect, drawRaffle);
+router.post('/:id/report', protect, reportRaffle);
 router.get('/:id/export', protect, exportBuyers);
 
 // Public routes (Catch-all slug must be at the bottom)

@@ -411,11 +411,58 @@ function padNumber(num, total) {
           </button>
         </div>
       </div>
+
+      <!-- Report Box -->
+      <% if (locals.user && raffle.creator && String(raffle.creator._id) !== String(locals.user._id)) { %>
+        <div class="bg-red-50/50 border border-red-100 p-6 rounded-3xl space-y-3 text-center">
+          <h4 class="text-xs font-bold text-red-700 uppercase tracking-wider block">¿Hay algún problema?</h4>
+          <p class="text-[11px] text-red-500 font-semibold leading-relaxed">Si detectas fraude, información falsa o cualquier irregularidad, repórtalo.</p>
+          <button onclick="openReportModal()" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl shadow-md uppercase tracking-wider transition-all duration-300">
+            🚨 Reportar Sorteo
+          </button>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Report Raffle Modal -->
+<div id="reportModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeReportModal()"></div>
+
+  <!-- Content -->
+  <div class="flex min-h-full items-center justify-center p-4">
+    <div class="relative transform overflow-hidden rounded-3xl bg-white p-8 text-left shadow-2xl transition-all w-full max-w-lg border border-slate-100">
+      
+      <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
+        <div>
+          <h3 class="text-xl font-extrabold text-dark">Reportar Sorteo</h3>
+          <p class="text-xs text-slate-400 mt-1">Explica detalladamente el motivo de tu reporte.</p>
+        </div>
+        <button onclick="closeReportModal()" class="text-slate-400 hover:text-dark text-lg font-bold">✕</button>
+      </div>
+
+      <form action="/raffles/<%= raffle._id %>/report" method="POST" class="space-y-5">
+        <!-- Reason -->
+        <div>
+          <label for="report-reason" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Motivo del Reporte *</label>
+          <textarea id="report-reason" name="reason" rows="4" required 
+                    placeholder="Ej: El sorteo promete un premio falso, el organizador no responde o comete fraude..."
+                    class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg hover:shadow-red-600/30 uppercase tracking-wider text-xs transition-all duration-300">
+          Enviar Reporte
+        </button>
+      </form>
+
     </div>
   </div>
 </div>
 
 <script>
+
   // Global Data
   const selectionMode = '<%= raffle.ticketSelectionMode %>';
   const ticketPrice = <%= raffle.ticketPrice %>;
@@ -807,7 +854,18 @@ function padNumber(num, total) {
 
   // Run initial checkout update
   updateCheckout();
+
+  function openReportModal() {
+    document.getElementById('reportModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeReportModal() {
+    document.getElementById('reportModal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
 </script>
+
 
 <% if (typeof googleMapsApiKey !== 'undefined' && googleMapsApiKey) { %>
   <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleMapsApiKey %>&libraries=places&callback=initMap" async defer></script>

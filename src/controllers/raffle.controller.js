@@ -8,6 +8,8 @@ import { GOOGLE_MAPS_API_KEY, APP_BASE_URL } from '../config/env.js';
 import Coupon from '../models/Coupon.js';
 import { createPreference } from '../services/payment.service.js';
 import NumberModel from '../models/Number.js';
+import Report from '../models/Report.js';
+import User from '../models/User.js';
 
 // GET list of own and participated raffles
 export const getMyRaffles = async (req, res) => {
@@ -426,6 +428,16 @@ export const deleteRaffle = async (req, res) => {
       return res.status(403).render('errors/500', { title: 'No Autorizado - RifaGo', layout: false });
     }
 
+    // Regla de negocio: si el sorteo ya se cumplió, solo se puede eliminar después de una semana (7 días)
+    const now = new Date();
+    if (raffle.drawDate && now > raffle.drawDate) {
+      const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+      const timeSinceDraw = now.getTime() - raffle.drawDate.getTime();
+      if (timeSinceDraw < oneWeekInMs) {
+        return res.redirect('/raffles/myraffles?error=' + encodeURIComponent('Los sorteos finalizados solo pueden ser eliminados después de una semana de su realización.'));
+      }
+    }
+
     // 1. Gather all associated image URLs to delete them physically
     const urlsToDelete = [];
     if (raffle.image) urlsToDelete.push(raffle.image);
@@ -757,3 +769,35 @@ export const failRaffleCreation = async (req, res) => {
     res.redirect('/raffles/myraffles?error=' + encodeURIComponent('El pago del sorteo falló.'));
   }
 };
+
+// POST /raffles/:id/report (Report a raffle)
+export const reportRaffle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const raffle = await Raffle.findById(id);
+    if (!raffle) {
+      return res.status(404).render('errors/404', { title: 'Sorteo no encontrado - RifaGo', layout: false });
+    }
+
+    // A user cannot report their own raffle
+    if (raffle.creator && raffle.creator.toString() === req.user._id.toString()) {
+      return res.redirect(`/raffles/${raffle.slug}?error=` + encodeURIComponent('No puedes reportar tu propio sorteo.'));
+    }
+
+    const report = new Report({
+      raffle: raffle._id,
+      user: req.user._id,
+      reason
+    });
+
+    await report.save();
+
+    res.redirect(`/raffles/${raffle.slug}?success=` + encodeURIComponent('Reporte enviado con éxito. El administrador revisará el caso.'));
+  } catch (error) {
+    console.error('Error reporting raffle:', error);
+    res.redirect(`/raffles?error=` + encodeURIComponent('Error al enviar el reporte.'));
+  }
+};
+
