@@ -187,3 +187,75 @@ export const deleteCoupon = async (req, res) => {
     res.redirect('/admin/coupons?error=Error interno al eliminar el cupón.');
   }
 };
+
+// GET list of all raffles in the system with filters
+export const getRaffles = async (req, res) => {
+  try {
+    const { status, q } = req.query;
+    const query = {};
+    
+    if (status) {
+      query.status = status;
+    }
+    if (q) {
+      query.title = { $regex: q, $options: 'i' };
+    }
+
+    const raffles = await Raffle.find(query)
+      .populate('creator', 'name email phone')
+      .populate('category', 'name')
+      .sort({ createdAt: -1 });
+
+    const stats = {
+      total: await Raffle.countDocuments(),
+      active: await Raffle.countDocuments({ status: 'activo' }),
+      pending: await Raffle.countDocuments({ status: 'pendiente' }),
+      draft: await Raffle.countDocuments({ status: 'borrador' }),
+    };
+
+    res.render('admin/raffles', {
+      title: 'Gestión de Sorteos - RifaGo',
+      raffles,
+      stats,
+      filters: {
+        status: status || '',
+        q: q || ''
+      },
+      error: req.query.error || null,
+      success: req.query.success || null
+    });
+  } catch (error) {
+    console.error('Error fetching admin raffles:', error);
+    res.status(500).render('errors/500', { title: 'Error del Servidor - RifaGo', layout: false });
+  }
+};
+
+// POST update raffle status administratively (e.g. approve pending, cancel)
+export const updateRaffleStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    const validStatuses = ['borrador', 'pendiente', 'activo', 'finalizado', 'cancelado'];
+    if (!validStatuses.includes(status)) {
+      return res.redirect('/admin/raffles?error=Estado no válido.');
+    }
+
+    const raffle = await Raffle.findById(id);
+    if (!raffle) {
+      return res.redirect('/admin/raffles?error=Sorteo no encontrado.');
+    }
+
+    raffle.status = status;
+    
+    // If activating, verify that drawDate is set or set creationPaid to true
+    if (status === 'activo') {
+      raffle.creationPaid = true;
+    }
+
+    await raffle.save();
+    res.redirect('/admin/raffles?success=Estado del sorteo actualizado correctamente.');
+  } catch (error) {
+    console.error('Error updating raffle status in admin:', error);
+    res.redirect('/admin/raffles?error=Error al actualizar el estado del sorteo.');
+  }
+};

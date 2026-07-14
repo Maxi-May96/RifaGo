@@ -1,5 +1,15 @@
 import express from 'express';
-import { getDashboard, getUsers, verifyUser, unverifyUser, getCoupons, createCoupon, deleteCoupon } from '../controllers/admin.controller.js';
+import { 
+  getDashboard, 
+  getUsers, 
+  verifyUser, 
+  unverifyUser, 
+  getCoupons, 
+  createCoupon, 
+  deleteCoupon,
+  getRaffles,
+  updateRaffleStatus
+} from '../controllers/admin.controller.js';
 
 const router = express.Router();
 
@@ -23,5 +33,11 @@ router.post('/coupons', createCoupon);
 
 // POST Delete Coupon
 router.post('/coupons/:id/delete', deleteCoupon);
+
+// GET Raffles Management list
+router.get('/raffles', getRaffles);
+
+// POST Update Raffle status
+router.post('/raffles/:id/status', updateRaffleStatus);
 
 export default router;

@@ -1,0 +1,226 @@
+<div class="space-y-8">
+  <!-- Header / Breadcrumbs -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-dark">Gestión de Sorteos</h1>
+      <p class="text-slate-500 text-sm mt-1">Supervisa, aprueba, cancela y monitorea todos los sorteos de la plataforma.</p>
+    </div>
+    <div>
+      <a href="/admin/dashboard" class="text-sm font-bold text-primary hover:text-primary-light flex items-center space-x-1.5 transition-colors">
+        <span>← Volver al Dashboard</span>
+      </a>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-4 py-3 rounded-xl">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold px-4 py-3 rounded-xl">
+      <%= success %>
+    </div>
+  <% } %>
+
+  <!-- Indicator Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Sorteos</span>
+        <h3 class="text-3xl font-black text-dark"><%= stats.total %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center text-xl">🎫</div>
+    </div>
+    
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Activos</span>
+        <h3 class="text-3xl font-black text-emerald-600"><%= stats.active %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">⚡</div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pendientes de Pago</span>
+        <h3 class="text-3xl font-black text-amber-500"><%= stats.pending %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl">⏳</div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-borderCustom p-6 shadow-sm flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Borradores</span>
+        <h3 class="text-3xl font-black text-slate-400"><%= stats.draft %></h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center text-xl">📝</div>
+    </div>
+  </div>
+
+  <!-- Filter Controls -->
+  <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-6">
+    <form action="/admin/raffles" method="GET" class="flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex-1 w-full relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">🔍</span>
+        <input type="text" name="q" value="<%= filters.q %>" placeholder="Buscar por título del sorteo..." 
+               class="w-full pl-10 pr-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+      </div>
+      
+      <div class="w-full md:w-48">
+        <select name="status" onchange="this.form.submit()" 
+                class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+          <option value="">Todos los estados</option>
+          <option value="borrador" <%= filters.status === 'borrador' ? 'selected' : '' %>>Borrador</option>
+          <option value="pendiente" <%= filters.status === 'pendiente' ? 'selected' : '' %>>Pendiente de Pago</option>
+          <option value="activo" <%= filters.status === 'activo' ? 'selected' : '' %>>Activo</option>
+          <option value="finalizado" <%= filters.status === 'finalizado' ? 'selected' : '' %>>Finalizado</option>
+          <option value="cancelado" <%= filters.status === 'cancelado' ? 'selected' : '' %>>Cancelado</option>
+        </select>
+      </div>
+
+      <div class="flex gap-2 w-full md:w-auto">
+        <button type="submit" class="flex-1 md:flex-none bg-primary hover:bg-primary-light text-white font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
+          Filtrar
+        </button>
+        <% if (filters.status || filters.q) { %>
+          <a href="/admin/raffles" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-4 py-3 rounded-xl text-sm transition-all flex items-center justify-center">
+            Limpiar
+          </a>
+        <% } %>
+      </div>
+    </form>
+  </div>
+
+  <!-- Raffles Table Card -->
+  <div class="bg-white rounded-3xl border border-borderCustom shadow-sm p-6 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-borderCustom text-slate-400 text-xs font-bold uppercase tracking-wider">
+            <th class="pb-3 font-semibold w-16">Portada</th>
+            <th class="pb-3 font-semibold">Detalles del Sorteo</th>
+            <th class="pb-3 font-semibold">Creador / Organizador</th>
+            <th class="pb-3 font-semibold">Categoría</th>
+            <th class="pb-3 font-semibold">Boletos / Precio</th>
+            <th class="pb-3 font-semibold">Estado</th>
+            <th class="pb-3 font-semibold text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm">
+          <% if (raffles.length === 0) { %>
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-400 font-semibold">
+                No se encontraron sorteos registrados.
+              </td>
+            </tr>
+          <% } %>
+          <% raffles.forEach(raffle => { %>
+            <tr class="hover:bg-slate-50/50 transition-colors">
+              <!-- Thumbnail -->
+              <td class="py-4">
+                <div class="w-12 h-10 rounded-lg overflow-hidden border border-slate-100 bg-slate-50 flex items-center justify-center">
+                  <% if (raffle.image) { %>
+                    <img src="<%= raffle.image %>" alt="Portada" class="w-full h-full object-cover">
+                  <% } else { %>
+                    <span class="text-xs">🖼️</span>
+                  <% } %>
+                </div>
+              </td>
+              
+              <!-- Info -->
+              <td class="py-4 pr-4">
+                <div class="font-extrabold text-dark line-clamp-1"><%= raffle.title %></div>
+                <div class="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-1.5">
+                  <span>📅 Sortea: <%= raffle.drawDate ? new Date(raffle.drawDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Sin fecha' %></span>
+                </div>
+              </td>
+              
+              <!-- Creator -->
+              <td class="py-4">
+                <% if (raffle.creator) { %>
+                  <div class="font-bold text-slate-700"><%= raffle.creator.name %></div>
+                  <div class="text-xs text-slate-400 font-mono"><%= raffle.creator.email %></div>
+                <% } else { %>
+                  <span class="text-slate-400 text-xs italic">Desconocido</span>
+                <% } %>
+              </td>
+
+              <!-- Category -->
+              <td class="py-4">
+                <span class="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full">
+                  <%= raffle.category ? raffle.category.name : 'General' %>
+                </span>
+              </td>
+
+              <!-- Tickets -->
+              <td class="py-4">
+                <div class="font-bold text-dark"><%= raffle.soldTickets %> / <%= raffle.totalTickets %> nros</div>
+                <div class="text-xs text-emerald-600 font-extrabold mt-0.5">$<%= raffle.ticketPrice.toLocaleString('es-ES') %> c/u</div>
+              </td>
+
+              <!-- Status badge -->
+              <td class="py-4">
+                <% if (raffle.status === 'activo') { %>
+                  <span class="text-xs font-black px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full uppercase tracking-wider">Activo</span>
+                <% } else if (raffle.status === 'pendiente') { %>
+                  <span class="text-xs font-black px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full uppercase tracking-wider">Pendiente</span>
+                <% } else if (raffle.status === 'borrador') { %>
+                  <span class="text-xs font-black px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full uppercase tracking-wider">Borrador</span>
+                <% } else if (raffle.status === 'finalizado') { %>
+                  <span class="text-xs font-black px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full uppercase tracking-wider">Finalizado</span>
+                <% } else { %>
+                  <span class="text-xs font-black px-2.5 py-1 bg-red-50 text-red-700 rounded-full uppercase tracking-wider">Cancelado</span>
+                <% } %>
+              </td>
+
+              <!-- Actions -->
+              <td class="py-4 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <!-- View detail -->
+                  <a href="/raffles/<%= raffle.slug %>" target="_blank" title="Ver Sorteo"
+                     class="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-xl transition-all">
+                    👁️
+                  </a>
+
+                  <!-- Action dropdown / Buttons -->
+                  <% if (raffle.status === 'pendiente') { %>
+                    <form action="/admin/raffles/<%= raffle._id %>/status" method="POST" class="inline">
+                      <input type="hidden" name="status" value="activo">
+                      <button type="submit" title="Aprobar y Activar"
+                              class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all cursor-pointer">
+                        ✅
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <% if (raffle.status === 'activo' || raffle.status === 'pendiente') { %>
+                    <form action="/admin/raffles/<%= raffle._id %>/status" method="POST" class="inline"
+                          onsubmit="return confirm('¿Estás seguro de que deseas cancelar este sorteo?')">
+                      <input type="hidden" name="status" value="cancelado">
+                      <button type="submit" title="Cancelar Sorteo"
+                              class="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer">
+                        ❌
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <% if (raffle.status === 'cancelado' || raffle.status === 'borrador') { %>
+                    <form action="/admin/raffles/<%= raffle._id %>/status" method="POST" class="inline">
+                      <input type="hidden" name="status" value="activo">
+                      <button type="submit" title="Activar Sorteo"
+                              class="p-2 text-primary hover:bg-primary/5 rounded-xl transition-all cursor-pointer">
+                        ⚡
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
