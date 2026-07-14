@@ -61,9 +61,12 @@ export const createPreference = async ({
         failure: failureUrl,
         pending: failureUrl,
       },
-      auto_return: 'approved',
       external_reference: externalReference,
     };
+
+    if (successUrl.startsWith('https://')) {
+      body.auto_return = 'approved';
+    }
 
     // Mercado Pago only accepts HTTPS/public URLs for notification_url.
     // If running on localhost/127.0.0.1, omit it to avoid preference creation errors.
