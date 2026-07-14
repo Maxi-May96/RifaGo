@@ -100,8 +100,8 @@ export const getProfile = async (req, res) => {
       .filter(w => w.status === 'pending')
       .reduce((acc, w) => acc + w.amount, 0);
 
-    // Withdrawable balance is total earnings minus completed and pending withdrawals
-    const withdrawableAmount = totalEarned - totalWithdrawn - totalPendingWithdrawal;
+    // Withdrawable balance is total earnings plus refunds/balance minus completed and pending withdrawals
+    const withdrawableAmount = totalEarned + (user.balance || 0) - totalWithdrawn - totalPendingWithdrawal;
 
     res.render('user/profile', {
       title: 'Mi Perfil - RifaGo',
@@ -122,7 +122,7 @@ export const getProfile = async (req, res) => {
 
 // Handles profile updates and file uploads
 export const updateProfile = async (req, res) => {
-  const { name, phone, age, description } = req.body;
+  const { name, phone, age, description, cvu, alias, bankName, redirectTab } = req.body;
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -131,9 +131,14 @@ export const updateProfile = async (req, res) => {
 
     // Update details
     user.name = name || user.name;
-    user.phone = phone || user.phone;
+    user.phone = phone !== undefined ? phone : user.phone;
     user.age = age ? Number(age) : user.age;
-    user.description = description || user.description;
+    user.description = description !== undefined ? description : user.description;
+
+    // Update banking details
+    user.cvu = cvu !== undefined ? cvu : user.cvu;
+    user.alias = alias !== undefined ? alias : user.alias;
+    user.bankName = bankName !== undefined ? bankName : user.bankName;
 
     // Map uploaded file paths if present
     if (req.files) {
@@ -153,20 +158,12 @@ export const updateProfile = async (req, res) => {
     req.user = user;
     res.locals.user = user;
 
-    res.render('user/profile', {
-      title: 'Mi Perfil - RifaGo',
-      user,
-      error: null,
-      success: 'Perfil actualizado con éxito. Si subiste tu documento, será verificado por el administrador.'
-    });
+    const targetTab = redirectTab || 'details';
+    res.redirect(`/user/profile?tab=${targetTab}&success=${encodeURIComponent('Perfil actualizado con éxito.')}`);
   } catch (error) {
     console.error('Error on updateProfile:', error);
-    res.render('user/profile', {
-      title: 'Mi Perfil - RifaGo',
-      user: req.user,
-      error: error.message || 'Error al actualizar el perfil',
-      success: null
-    });
+    const targetTab = req.body.redirectTab || 'details';
+    res.redirect(`/user/profile?tab=${targetTab}&error=${encodeURIComponent(error.message || 'Error al actualizar el perfil')}`);
   }
 };
 

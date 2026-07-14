@@ -49,6 +49,22 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  cvu: {
+    type: String,
+    default: ''
+  },
+  alias: {
+    type: String,
+    default: ''
+  },
+  bankName: {
+    type: String,
+    default: ''
+  },
+  balance: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

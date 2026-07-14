@@ -171,8 +171,43 @@
             <div class="absolute right-2 -bottom-2 text-6xl opacity-10">💵</div>
             <span class="text-emerald-700 font-extrabold uppercase text-[10px] tracking-wider block">Saldo Disponible</span>
             <span class="font-black text-emerald-600 text-xl mt-2 block">$<%= withdrawableAmount.toLocaleString('es-AR') %> ARS</span>
-            <p class="text-[10px] text-emerald-600 mt-1">Listo para ser transferido</p>
+            <% if (user.balance > 0) { %>
+              <p class="text-[9px] text-emerald-700 mt-1 font-bold">Incluye $<%= user.balance.toLocaleString('es-AR') %> ARS reembolsados</p>
+            <% } else { %>
+              <p class="text-[10px] text-emerald-600 mt-1">Listo para ser transferido</p>
+            <% } %>
           </div>
+        </div>
+
+        <!-- Payout Bank Account Details Form -->
+        <div class="bg-slate-50 border border-slate-100 p-6 rounded-3xl space-y-4">
+          <div>
+            <h4 class="font-black text-dark text-sm">Cuentas de Transferencia Destino</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Guarda tu cuenta de cobro favorita para autocompletar tus solicitudes de retiro.</p>
+          </div>
+          <form action="/user/profile" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <input type="hidden" name="redirectTab" value="balance">
+            <div>
+              <label class="block text-slate-500 font-extrabold text-[9px] uppercase tracking-wider mb-1.5">Banco o Billetera</label>
+              <input type="text" name="bankName" value="<%= user.bankName || '' %>" placeholder="Ej: Mercado Pago, Brubank"
+                     class="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-extrabold text-[9px] uppercase tracking-wider mb-1.5">CBU / CVU (22 dígitos)</label>
+              <input type="text" name="cvu" value="<%= user.cvu || '' %>" minlength="22" maxlength="22" placeholder="Ej: 0000003100012345678901"
+                     class="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all">
+            </div>
+            <div>
+              <label class="block text-slate-500 font-extrabold text-[9px] uppercase tracking-wider mb-1.5">Alias de Cuenta</label>
+              <div class="flex space-x-2">
+                <input type="text" name="alias" value="<%= user.alias || '' %>" placeholder="Ej: mi.alias.pago"
+                       class="w-full px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent transition-all">
+                <button type="submit" class="bg-gradient-to-r from-primary to-primary-light hover:from-primary-light hover:to-primary text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all duration-300 shadow-md">
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
 
         <!-- Action Bar: Withdraw Funds -->
@@ -332,28 +367,28 @@
         <!-- Bank / Wallet Name -->
         <div>
           <label for="withdraw-bank" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Banco o Billetera destino *</label>
-          <input type="text" id="withdraw-bank" name="bankName" required placeholder="Ej: Mercado Pago, Brubank, Galicia"
+          <input type="text" id="withdraw-bank" name="bankName" required value="<%= user.bankName || '' %>" placeholder="Ej: Mercado Pago, Brubank, Galicia"
                  class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
         </div>
 
         <!-- CBU / CVU -->
         <div>
           <label for="withdraw-cbu" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">CBU / CVU (22 dígitos) *</label>
-          <input type="text" id="withdraw-cbu" name="cbu" minlength="22" maxlength="22" required placeholder="Ej: 0000003100012345678901"
+          <input type="text" id="withdraw-cbu" name="cbu" minlength="22" maxlength="22" required value="<%= user.cvu || '' %>" placeholder="Ej: 0000003100012345678901"
                  class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
         </div>
 
         <!-- Alias -->
         <div>
           <label for="withdraw-alias" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Alias de la Cuenta *</label>
-          <input type="text" id="withdraw-alias" name="alias" required placeholder="Ej: mi.cuenta.rifago"
+          <input type="text" id="withdraw-alias" name="alias" required value="<%= user.alias || '' %>" placeholder="Ej: mi.cuenta.rifago"
                  class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
         </div>
 
         <!-- Holder Name -->
         <div>
           <label for="withdraw-holder" class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Nombre del Titular de Cuenta *</label>
-          <input type="text" id="withdraw-holder" name="holderName" required placeholder="Ej: Juan Pérez"
+          <input type="text" id="withdraw-holder" name="holderName" required value="<%= user.name %>" placeholder="Ej: Juan Pérez"
                  class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
         </div>
 

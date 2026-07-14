@@ -443,7 +443,16 @@ export const deleteRaffle = async (req, res) => {
       await deleteUploadedFile(url);
     }
 
-    // 2. Cascade delete from database
+    // 2. Refund creation cost to creator's balance if creationPaid is true and creationCost > 0
+    if (raffle.creationPaid && raffle.creationCost > 0) {
+      const creator = await User.findById(raffle.creator);
+      if (creator) {
+        creator.balance = (creator.balance || 0) + raffle.creationCost;
+        await creator.save();
+      }
+    }
+
+    // 3. Cascade delete from database
     await NumberModel.deleteMany({ raffle: id });
     await Purchase.deleteMany({ raffle: id });
     await Payment.deleteMany({ raffle: id });
