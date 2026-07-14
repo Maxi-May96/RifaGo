@@ -132,7 +132,7 @@ export const getCoupons = async (req, res) => {
 // POST create a new coupon
 export const createCoupon = async (req, res) => {
   try {
-    const { code, discountType, discountValue, expirationDate, usageLimit } = req.body;
+    const { code, discountType, discountValue, expirationDate, usageLimit, minTickets } = req.body;
 
     if (!code || !discountValue) {
       return res.redirect('/admin/coupons?error=El código y el valor del descuento son obligatorios.');
@@ -149,6 +149,7 @@ export const createCoupon = async (req, res) => {
     // Prepare parameters
     const expDate = expirationDate ? new Date(expirationDate) : null;
     const limit = usageLimit && Number(usageLimit) > 0 ? Number(usageLimit) : null;
+    const minTix = minTickets ? Number(minTickets) : 0;
 
     const newCoupon = new Coupon({
       code: uppercaseCode,
@@ -156,6 +157,7 @@ export const createCoupon = async (req, res) => {
       discountValue: Number(discountValue),
       expirationDate: expDate,
       usageLimit: limit,
+      minTickets: minTix,
       isActive: true
     });
 

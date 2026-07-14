@@ -302,6 +302,14 @@ export const postCreateRaffle = async (req, res) => {
             error: 'El código de descuento ingresado ha superado su límite de usos.'
           });
         }
+        // Minimum tickets check
+        if (coupon.minTickets && newRaffle.totalTickets < coupon.minTickets) {
+          return res.status(400).render('raffle/create', {
+            title: 'Crear Nuevo Sorteo - RifaGo',
+            googleMapsApiKey: GOOGLE_MAPS_API_KEY || '',
+            error: `El código de descuento ingresado es válido únicamente para sorteos con al menos ${coupon.minTickets} números.`
+          });
+        }
         // Increment usage
         coupon.usageCount += 1;
         await coupon.save();
@@ -543,7 +551,7 @@ export const getRaffleDetail = async (req, res) => {
 // GET validate coupon code for raffle creation cost
 export const validateCoupon = async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, totalTickets } = req.query;
     if (!code) {
       return res.status(400).json({ valid: false, message: 'El código de cupón es requerido' });
     }
@@ -561,6 +569,17 @@ export const validateCoupon = async (req, res) => {
     // Check usage limit
     if (coupon.usageLimit !== null && coupon.usageLimit !== undefined && coupon.usageCount >= coupon.usageLimit) {
       return res.json({ valid: false, message: 'El cupón ha agotado su límite de usos' });
+    }
+
+    // Check minimum tickets requirement
+    if (coupon.minTickets && totalTickets) {
+      const ticketsCount = Number(totalTickets);
+      if (ticketsCount < coupon.minTickets) {
+        return res.json({ 
+          valid: false, 
+          message: `Este cupón sólo aplica para sorteos con al menos ${coupon.minTickets} números` 
+        });
+      }
     }
     
     res.json({

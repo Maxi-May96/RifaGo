@@ -105,6 +105,24 @@
             <p class="text-[10px] text-slate-400">Cantidad total de veces que puede aplicarse este cupón en el sitio.</p>
           </div>
 
+          <!-- Minimum Tickets Requirement -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Mínimo de Números del Sorteo *</label>
+            <select name="minTickets" class="w-full px-4 py-3 text-sm rounded-xl border border-borderCustom focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+              <option value="0">Cualquier cantidad (Sin mínimo)</option>
+              <option value="50">A partir de 50 números</option>
+              <option value="100">A partir de 100 números</option>
+              <option value="150">A partir de 150 números</option>
+              <option value="200">A partir de 200 números</option>
+              <option value="250">A partir de 250 números</option>
+              <option value="300">A partir de 300 números</option>
+              <option value="400">A partir de 400 números</option>
+              <option value="500">A partir de 500 números</option>
+              <option value="1000">A partir de 1000 números</option>
+            </select>
+            <p class="text-[10px] text-slate-400">El descuento sólo aplicará para sorteos creados con esta cantidad de boletos o más.</p>
+          </div>
+
           <!-- Submit Button -->
           <button type="submit" class="w-full bg-primary hover:bg-primary-light text-white font-extrabold py-3.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center space-x-2 mt-6 cursor-pointer">
             <span>✨</span>
@@ -128,6 +146,7 @@
               <tr class="border-b border-borderCustom text-slate-400 text-xs font-bold uppercase tracking-wider">
                 <th class="pb-3 font-semibold">Código</th>
                 <th class="pb-3 font-semibold">Descuento</th>
+                <th class="pb-3 font-semibold">Mín. Números</th>
                 <th class="pb-3 font-semibold">Uso / Límite</th>
                 <th class="pb-3 font-semibold">Vencimiento</th>
                 <th class="pb-3 font-semibold">Estado</th>
@@ -160,6 +179,10 @@
                     <!-- Value -->
                     <td class="py-4 font-extrabold text-dark">
                       <%= c.discountType === 'percentage' ? `${c.discountValue}%` : `$${c.discountValue} ARS` %>
+                    </td>
+                    <!-- Min Tickets -->
+                    <td class="py-4 text-slate-500 font-bold">
+                      <%= c.minTickets ? `${c.minTickets} números` : 'Sin mínimo' %>
                     </td>
                     <!-- Limit -->
                     <td class="py-4 text-slate-500 font-bold">

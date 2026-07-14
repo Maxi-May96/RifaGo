@@ -32,6 +32,11 @@ const CouponSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  minTickets: {
+    type: Number,
+    default: 0,
+    min: [0, 'La cantidad de boletos no puede ser negativa']
+  },
   isActive: {
     type: Boolean,
     default: true

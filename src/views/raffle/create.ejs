@@ -966,6 +966,7 @@
   async function applyCoupon() {
     const codeInput = document.getElementById('in-couponCode');
     const msg = document.getElementById('couponMsg');
+    const tixInput = document.getElementById('in-totalTickets');
     if (!codeInput || !msg) return;
     
     const code = codeInput.value.trim().toUpperCase();
@@ -975,9 +976,11 @@
       msg.classList.remove('hidden');
       return;
     }
+
+    const totalTickets = tixInput ? tixInput.value : 0;
     
     try {
-      const response = await fetch(`/raffles/validate-coupon?code=${code}`);
+      const response = await fetch(`/raffles/validate-coupon?code=${code}&totalTickets=${totalTickets}`);
       const data = await response.json();
       
       if (data.valid) {
@@ -1018,6 +1021,12 @@
     
     input.value = val;
     updatePlanPrice();
+    
+    // If a coupon code is typed, revalidate it to check minimum ticket requirements
+    const codeInput = document.getElementById('in-couponCode');
+    if (codeInput && codeInput.value.trim() !== '') {
+      applyCoupon();
+    }
   }
 
   function updatePlanPrice() {
