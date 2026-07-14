@@ -71,6 +71,11 @@ export const createPurchase = async (req, res) => {
       return res.status(400).send('El sorteo no está activo en este momento.');
     }
 
+    const now = new Date();
+    if (raffle.drawDate && now > new Date(raffle.drawDate)) {
+      return res.status(400).send('El sorteo ya ha cerrado por haber alcanzado la fecha del sorteo.');
+    }
+
     const qty = parseInt(quantity) || 1;
     let numbersToReserve = [];
 

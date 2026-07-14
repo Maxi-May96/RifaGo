@@ -68,47 +68,76 @@ function padNumber(num, total) {
         <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line"><%= raffle.description %></p>
       </div>
 
-      <!-- TICKET SELECTOR INTERFACE OR CELEBRATION WINNER CARD -->
-      <% if (raffle.status === 'finalizado' && raffle.winner) { %>
-        <!-- CELEBRATION WINNER CARD -->
-        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-          <!-- Glow Background Elements -->
-          <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
-          <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-emerald-700/30 rounded-full blur-2xl"></div>
+      <!-- TICKET SELECTOR INTERFACE OR CELEBRATION WINNER/CLOSED CARD -->
+      <% 
+      const nowVal = new Date();
+      const isTimePassed = raffle.drawDate && nowVal > new Date(raffle.drawDate);
+      const isClosed = raffle.status === 'finalizado' || isTimePassed;
+      %>
 
-          <div class="space-y-4 text-center md:text-left relative z-10 max-w-lg">
-            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/35">
-              <span>🎉</span> <span>Sorteo Completado</span>
-            </span>
-            <h2 class="text-3xl font-black tracking-tight">¡Felicitaciones al Ganador!</h2>
-            <p class="text-emerald-50 text-xs leading-relaxed font-semibold">
-              El sorteo se ha realizado con éxito. Agradecemos a toda la comunidad por participar.
-            </p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 pt-2">
-              <div class="bg-white/10 border border-white/20 px-4 py-2.5 rounded-xl">
-                <span class="block text-[8px] text-emerald-100 font-bold uppercase tracking-wider">Nombre del Ganador</span>
-                <span class="font-extrabold text-white text-sm"><%= raffle.winner.name %></span>
-              </div>
-              <% if (raffle.winner.email) { %>
+      <% if (isClosed) { %>
+        <% if (raffle.winner) { %>
+          <!-- CELEBRATION WINNER CARD -->
+          <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <!-- Glow Background Elements -->
+            <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-emerald-700/30 rounded-full blur-2xl"></div>
+  
+            <div class="space-y-4 text-center md:text-left relative z-10 max-w-lg">
+              <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/35">
+                <span>🎉</span> <span>Sorteo Completado</span>
+              </span>
+              <h2 class="text-3xl font-black tracking-tight">¡Felicitaciones al Ganador!</h2>
+              <p class="text-emerald-50 text-xs leading-relaxed font-semibold">
+                El sorteo se ha realizado con éxito. Agradecemos a toda la comunidad por participar.
+              </p>
+              
+              <div class="flex flex-col sm:flex-row gap-4 pt-2">
                 <div class="bg-white/10 border border-white/20 px-4 py-2.5 rounded-xl">
-                  <span class="block text-[8px] text-emerald-100 font-bold uppercase tracking-wider">Contacto</span>
-                  <span class="font-extrabold text-white text-xs"><%= raffle.winner.email %></span>
+                  <span class="block text-[8px] text-emerald-100 font-bold uppercase tracking-wider">Nombre del Ganador</span>
+                  <span class="font-extrabold text-white text-sm"><%= raffle.winner.name %></span>
                 </div>
-              <% } %>
+                <% if (raffle.winner.email) { %>
+                  <div class="bg-white/10 border border-white/20 px-4 py-2.5 rounded-xl">
+                    <span class="block text-[8px] text-emerald-100 font-bold uppercase tracking-wider">Contacto</span>
+                    <span class="font-extrabold text-white text-xs"><%= raffle.winner.email %></span>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+  
+            <!-- Big Winning Number Stub -->
+            <div class="bg-white text-emerald-800 rounded-3xl p-6 border-4 border-dashed border-emerald-200/50 shadow-lg text-center min-w-[200px] flex-shrink-0 relative z-10 transform hover:scale-105 transition-transform duration-300">
+              <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-teal-600 rounded-full"></div>
+              <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-teal-600 rounded-full"></div>
+              
+              <span class="text-[9px] text-emerald-600 font-black uppercase tracking-wider block mb-1">Nro Ganador</span>
+              <span class="text-4xl font-black tracking-wider block"><%= padNumber(raffle.winningNumber, raffle.totalTickets) %></span>
+              <span class="text-[9px] font-bold text-slate-400 block mt-2">Sorteo Verificado RifaGo</span>
             </div>
           </div>
+        <% } else { %>
+          <!-- CLOSED CARD (TIME PASSED, NO WINNER DECLARED YET) -->
+          <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-amber-700/30 rounded-full blur-2xl"></div>
 
-          <!-- Big Winning Number Stub -->
-          <div class="bg-white text-emerald-800 rounded-3xl p-6 border-4 border-dashed border-emerald-200/50 shadow-lg text-center min-w-[200px] flex-shrink-0 relative z-10 transform hover:scale-105 transition-transform duration-300">
-            <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-teal-600 rounded-full"></div>
-            <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-teal-600 rounded-full"></div>
-            
-            <span class="text-[9px] text-emerald-600 font-black uppercase tracking-wider block mb-1">Nro Ganador</span>
-            <span class="text-4xl font-black tracking-wider block"><%= padNumber(raffle.winningNumber, raffle.totalTickets) %></span>
-            <span class="text-[9px] font-bold text-slate-400 block mt-2">Sorteo Verificado RifaGo</span>
+            <div class="space-y-4 text-center md:text-left relative z-10 max-w-lg">
+              <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/35">
+                <span>⏳</span> <span>Venta Finalizada</span>
+              </span>
+              <h2 class="text-3xl font-black tracking-tight">Sorteo Cerrado</h2>
+              <p class="text-amber-50 text-xs leading-relaxed font-semibold">
+                El plazo para adquirir boletos ha finalizado. El sorteo se encuentra cerrado y próximamente el organizador anunciará el número ganador.
+              </p>
+            </div>
+            <div class="bg-white text-orange-800 rounded-3xl p-6 border-4 border-dashed border-orange-200/50 shadow-lg text-center min-w-[200px] flex-shrink-0 relative z-10">
+              <span class="text-[9px] text-orange-600 font-black uppercase tracking-wider block mb-1">Estado</span>
+              <span class="text-2xl font-black tracking-wider block">CERRADO</span>
+              <span class="text-[9px] font-bold text-slate-400 block mt-2">Espera de Resultados</span>
+            </div>
           </div>
-        </div>
+        <% } %>
       <% } else { %>
         <!-- TICKET SELECTOR INTERFACE -->
         <div class="bg-white rounded-3xl p-6 border border-borderCustom shadow-sm space-y-6">
