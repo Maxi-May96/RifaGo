@@ -190,14 +190,44 @@ const RaffleSchema = new mongoose.Schema({
 });
 
 // Pre-save to auto-generate slug and populate legacy components
-RaffleSchema.pre('save', function(next) {
-  if (this.isModified('title')) {
-    this.slug = this.title
+RaffleSchema.pre('save', async function(next) {
+  if (this.isModified('title') || !this.slug) {
+    let baseSlug = this.title
       .toLowerCase()
       .normalize('NFD') // remove accents
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
+
+    if (!baseSlug) {
+      baseSlug = 'sorteo';
+    }
+
+    let uniqueSlug = baseSlug;
+    let isUnique = false;
+    let counter = 1;
+
+    while (!isUnique) {
+      const existingRaffle = await this.constructor.findOne({ 
+        slug: uniqueSlug, 
+        _id: { $ne: this._id } 
+      });
+
+      if (!existingRaffle) {
+        isUnique = true;
+      } else {
+        uniqueSlug = `${baseSlug}-${counter}`;
+        counter++;
+        
+        if (counter > 100) {
+          const randomSuffix = Math.random().toString(36).substring(2, 6);
+          uniqueSlug = `${baseSlug}-${randomSuffix}`;
+          break;
+        }
+      }
+    }
+
+    this.slug = uniqueSlug;
   }
   
   // Keep legacy fields updated for dashboard queries
