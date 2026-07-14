@@ -1,5 +1,5 @@
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-import { MERCADOPAGO } from '../config/env.js';
+import { MERCADOPAGO, APP_BASE_URL } from '../config/env.js';
 
 let client = null;
 
@@ -35,6 +35,10 @@ export const createPreference = async ({
     }
 
     const preference = new Preference(client);
+    
+    // Mercado Pago webhook URL path
+    const webhookUrl = `${APP_BASE_URL}/payments/webhook`;
+
     const response = await preference.create({
       body: {
         items: [
@@ -52,6 +56,7 @@ export const createPreference = async ({
         },
         auto_return: 'approved',
         external_reference: externalReference,
+        notification_url: webhookUrl,
       }
     });
 
