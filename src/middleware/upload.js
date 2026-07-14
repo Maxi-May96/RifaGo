@@ -3,11 +3,17 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
+import os from 'os';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Target root upload directory in public folder
-const uploadsDir = path.join(__dirname, '../public/uploads');
+// Serverless environments (like Vercel) have a read-only filesystem, except for /tmp.
+// We write temporary uploads there before sending them to Firebase.
+const isServerless = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production';
+const uploadsDir = isServerless 
+  ? path.join(os.tmpdir(), 'uploads') 
+  : path.join(__dirname, '../public/uploads');
 
 // Setup Disk Storage with dynamic folder allocation
 const storage = multer.diskStorage({
