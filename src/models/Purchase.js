@@ -21,7 +21,7 @@ const PurchaseSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'completed', 'failed'],
+    enum: ['pending', 'pending_payment', 'completed', 'failed'],
     default: 'pending'
   },
   paymentId: {
