@@ -466,10 +466,10 @@ export const deleteRaffle = async (req, res) => {
     await Payment.deleteMany({ raffle: id });
     await Raffle.findByIdAndDelete(id);
 
-    res.redirect('/raffles/myraffles?success=Sorteo eliminado con éxito');
+    res.redirect('/raffles/myraffles?success=' + encodeURIComponent('Sorteo eliminado con éxito'));
   } catch (error) {
     console.error('Error deleting raffle:', error);
-    res.redirect('/raffles/myraffles?error=Error al eliminar sorteo');
+    res.redirect('/raffles/myraffles?error=' + encodeURIComponent('Error al eliminar el sorteo'));
   }
 };
 
