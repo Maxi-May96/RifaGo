@@ -22,7 +22,7 @@ export const postLogin = async (req, res) => {
     if (!email || !password) {
       return res.render('auth/login', { title: 'Iniciar Sesión - RifaGo', error: 'Todos los campos son obligatorios' });
     }
-    
+
     const user = await User.findOne({ email });
     if (!user || !(await user.comparePassword(password))) {
       return res.render('auth/login', { title: 'Iniciar Sesión - RifaGo', error: 'Credenciales incorrectas' });
@@ -37,7 +37,7 @@ export const postLogin = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    res.redirect('/');
+    res.redirect('/user/profile');
   } catch (error) {
     console.error('Error on postLogin:', error);
     res.render('auth/login', { title: 'Iniciar Sesión - RifaGo', error: 'Ocurrió un error en el servidor' });

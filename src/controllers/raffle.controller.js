@@ -428,14 +428,10 @@ export const deleteRaffle = async (req, res) => {
       return res.status(403).render('errors/500', { title: 'No Autorizado - RifaGo', layout: false });
     }
 
-    // Regla de negocio: si el sorteo ya se cumplió, solo se puede eliminar después de una semana (7 días)
-    const now = new Date();
-    if (raffle.drawDate && now > raffle.drawDate) {
-      const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
-      const timeSinceDraw = now.getTime() - raffle.drawDate.getTime();
-      if (timeSinceDraw < oneWeekInMs) {
-        return res.redirect('/raffles/myraffles?error=' + encodeURIComponent('Los sorteos finalizados solo pueden ser eliminados después de una semana de su realización.'));
-      }
+    // Regla de negocio: no puedes eliminar si ya hay participante (boletos vendidos o reservados)
+    const hasParticipants = await NumberModel.exists({ raffle: raffle._id });
+    if (hasParticipants || (raffle.soldTickets && raffle.soldTickets > 0)) {
+      return res.redirect('/raffles/myraffles?error=' + encodeURIComponent('No puedes eliminar un sorteo que ya tiene participantes o boletos seleccionados.'));
     }
 
     // 1. Gather all associated image URLs to delete them physically
