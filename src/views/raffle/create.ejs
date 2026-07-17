@@ -127,10 +127,16 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Search Autocomplete Input (Full-width) -->
             <div class="md:col-span-2 space-y-2">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Buscar Dirección (Google Maps)</label>
+              <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Buscar Dirección (Google Maps)</label>
+                <button type="button" id="btnGeolocate" class="text-xs font-extrabold text-primary hover:text-white flex items-center space-x-1.5 transition-all bg-primary/10 hover:bg-primary px-3 py-1.5 rounded-xl border border-primary/20 cursor-pointer">
+                  <span>📍</span> <span>Ubicarme en el mapa</span>
+                </button>
+              </div>
               <input type="text" id="mapSearchInput" placeholder="Escribe una calle, plaza o ciudad..."
                      class="w-full px-4 py-3 text-sm rounded-xl border border-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
             </div>
+
 
             <!-- Google Map visual component (Full-width) -->
             <div class="md:col-span-2">
@@ -897,6 +903,59 @@
       });
     });
 
+    // Geolocation Integration
+    const btnGeolocate = document.getElementById('btnGeolocate');
+    if (btnGeolocate) {
+      btnGeolocate.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          alert('La geolocalización no está soportada por tu navegador.');
+          return;
+        }
+
+        btnGeolocate.disabled = true;
+        const originalText = btnGeolocate.innerHTML;
+        btnGeolocate.innerHTML = '<span>⏳</span> <span>Buscando...</span>';
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const latLng = new google.maps.LatLng(lat, lng);
+
+            logDebug("Ubicación obtenida por GPS: " + latLng.toString());
+
+            // Center map and position marker (Once, not watched/fixed)
+            map.setCenter(latLng);
+            map.setZoom(16);
+            marker.setPosition(latLng);
+
+            document.getElementById('in-latitude').value = lat;
+            document.getElementById('in-longitude').value = lng;
+
+            // Reverse geocode to fill inputs
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: latLng }, (results, status) => {
+              if (status === 'OK' && results[0]) {
+                input.value = results[0].formatted_address;
+                fillAddressFields(results[0].address_components, results[0].formatted_address);
+              } else {
+                logDebug("Geocodificación inversa fallida por GPS: " + status);
+              }
+              btnGeolocate.disabled = false;
+              btnGeolocate.innerHTML = originalText;
+            });
+          },
+          (error) => {
+            logDebug("Error de geolocalización: " + error.message);
+            alert('No pudimos acceder a tu ubicación actual. Por favor búscala en el mapa manualmente.');
+            btnGeolocate.disabled = false;
+            btnGeolocate.innerHTML = originalText;
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+      });
+    }
+
     // Prevent enter key from submitting the wizard form on autocomplete search
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -904,6 +963,7 @@
       }
     });
   }
+
 
   function fillAddressFields(components, formattedAddress) {
     logDebug("Llenando campos con componentes:\n" + JSON.stringify(components) + "\nY dirección: " + formattedAddress);
